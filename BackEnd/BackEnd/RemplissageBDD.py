@@ -1,6 +1,7 @@
 import psycopg2
 import pandas as pd
 import numpy as np
+import math
 
 def grav(x):
     return {
@@ -55,20 +56,22 @@ for row in merged.itertuples(index=True, name='Pandas'):
     else:
         genreletter = 'F'
     age = 2000 + getattr(row,"an") - getattr(row,"an_nais")
+    if not math.isnan(age):
+        #print(str(int(getattr(row,"Num_Acc"))))
 
-    rqt = ("INSERT INTO usager_accidente_par_vehicule "
-        "VALUES ('" + str("1") + "', " #getattr(row,"num_veh")                                                   #Num_vehicule
-        "(SELECT id_date FROM public.\"Date\" WHERE annee=20"+str(getattr(row,"an"))+" AND jour="+str(getattr(row,"jour"))+" AND mois="+str(getattr(row,"mois"))+"), "                  #id date
-        "" + str("100") + ", "    #getattr(row,"Num_Acc")                                                         #Num accident
-        "(SELECT id_heure FROM public.\"Heure\" WHERE heure="+str(int(heures))+" AND minute="+str(minutes)+"), " #id heure
-        "" + str(getattr(row,"catr")) + ", "                                                                #id type route
-        "" + str(getattr(row,"catv")) + ", "                                                                #id type vehicule
-        "(SELECT id_usager FROM public.usager WHERE genre='"+str(genreletter)+"' AND age="+str(age)+" AND num_usager="+str(getattr(row,"catu"))+"), "               #id usager
-        "" + str(getattr(row,"atm")) + ", "                                                                 #id meteo
-        "" + str(getattr(row,"lat")) + ", "                                                                 #latitude
-        "" + str(getattr(row,"long")) + ", "                                                                #longitude
-        "'" + grav(getattr(row,"grav")) + "', "                                                             #gravite
-        "" + str(getattr(row,"ind")) + " "                                                                  #indicateur
-        ")")
-    cursor.execute(rqt)
-    conn.commit()
+        rqt = ("INSERT INTO usager_accidente_par_vehicule "
+            "VALUES ('" + str(getattr(row,"num_veh")) + "', "                                                   #Num_vehicule
+            "(SELECT id_date FROM public.\"Date\" WHERE annee="+str(int(2000+getattr(row,"an")))+" AND jour="+str(getattr(row,"jour"))+" AND mois="+str(getattr(row,"mois"))+"), "                  #id date
+            "" + str(int(getattr(row,"Num_Acc"))) + ", "                                                             #Num accident
+            "(SELECT id_heure FROM public.\"Heure\" WHERE heure="+str(int(heures))+" AND minute="+str(minutes)+"), " #id heure
+            "" + str(getattr(row,"catr")) + ", "                                                                #id type route
+            "" + str(getattr(row,"catv")) + ", "                                                                #id type vehicule
+            "(SELECT id_usager FROM public.usager WHERE genre='"+str(genreletter)+"' AND age="+str(age)+" AND num_usager="+str(getattr(row,"catu"))+"), "               #id usager
+            "" + str(getattr(row,"atm")) + ", "                                                                 #id meteo
+            "" + str(getattr(row,"lat")) + ", "                                                                 #latitude
+            "" + str(getattr(row,"long")) + ", "                                                                #longitude
+            "'" + grav(getattr(row,"grav")) + "', "                                                             #gravite
+            "" + str(getattr(row,"ind")) + " "                                                                  #indicateur
+            ") ON CONFLICT DO NOTHING")
+        cursor.execute(rqt)
+        conn.commit()
