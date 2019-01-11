@@ -1,4 +1,4 @@
-#Thu Dec 20 23:26:55 CET 2018
-base.0=D\:\\ProjetArchi\\Accidentology-Manager\\myApp\\platforms\\android\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
+#Fri Jan 11 05:08:33 CET 2019
+base.0=C\:\\Users\\Boulayara\\Documents\\Accidentology-Manager-develop\\myApp\\platforms\\android\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
 path.0=classes.dex
 renamed.0=classes.dex
