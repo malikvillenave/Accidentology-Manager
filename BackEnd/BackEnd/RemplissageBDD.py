@@ -2,6 +2,8 @@ import psycopg2
 import pandas as pd
 import numpy as np
 import math
+import glob
+import os
 
 def grav(x):
     return {
@@ -31,7 +33,14 @@ usager = usager.drop(["Unnamed: 0"],axis=1)
 veh = pd.DataFrame(pd.read_csv("merge_data/vehicules.csv"))
 veh = veh.drop(["Unnamed: 0"],axis=1)
 
-acc = pd.DataFrame(pd.read_csv("indicateurs_niort220km.csv"))
+#acc = pd.DataFrame(pd.read_csv("indicateurs_niort220km.csv"))
+
+path = r'indicateurs'
+all_files = glob.glob(os.path.join(path, "*.csv"))
+
+df_from_each_file = (pd.read_csv(f) for f in all_files)
+acc = pd.concat(df_from_each_file, ignore_index=True)
+
 acc = acc.drop(["Unnamed: 0"],axis=1)
 acc['lat'].replace('', np.nan, inplace=True)
 acc['long'].replace('', np.nan, inplace=True)
@@ -41,7 +50,6 @@ merged = acc.merge(carac, on=['Num_Acc'])
 merged = merged.merge(lieux, on=['Num_Acc'])
 merged = merged.merge(usager, on=['Num_Acc'])
 merged = merged.merge(veh, on=['Num_Acc','num_veh'])
-
 
 merged.to_csv("output.csv", index=False)
 
@@ -56,8 +64,9 @@ for row in merged.itertuples(index=True, name='Pandas'):
     else:
         genreletter = 'F'
     age = 2000 + getattr(row,"an") - getattr(row,"an_nais")
-    if not math.isnan(age):
-        #print(str(int(getattr(row,"Num_Acc"))))
+    atm = getattr(row,"atm")
+    if not math.isnan(age) and not math.isnan(atm):
+        print(str(int(getattr(row,"Num_Acc"))))
 
         rqt = ("INSERT INTO usager_accidente_par_vehicule "
             "VALUES ('" + str(getattr(row,"num_veh")) + "', "                                                   #Num_vehicule
@@ -67,7 +76,7 @@ for row in merged.itertuples(index=True, name='Pandas'):
             "" + str(getattr(row,"catr")) + ", "                                                                #id type route
             "" + str(getattr(row,"catv")) + ", "                                                                #id type vehicule
             "(SELECT id_usager FROM public.usager WHERE genre='"+str(genreletter)+"' AND age="+str(age)+" AND num_usager="+str(getattr(row,"catu"))+"), "               #id usager
-            "" + str(getattr(row,"atm")) + ", "                                                                 #id meteo
+            "" + str(atm) + ", "                                                                                #id meteo
             "" + str(getattr(row,"lat")) + ", "                                                                 #latitude
             "" + str(getattr(row,"long")) + ", "                                                                #longitude
             "'" + grav(getattr(row,"grav")) + "', "                                                             #gravite
