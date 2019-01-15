@@ -2,15 +2,13 @@ from flask import Flask, request
 from flask_restful import Resource, Api
 import psycopg2
 import math
-import json
 from numpy import mean
+import config
 
 app = Flask(__name__)
 
-connectionString = "dbname=accidentology_light user=postgres host=localhost password=postgres port=5432"
-
 try:
-    conn = psycopg2.connect(connectionString)
+    conn = psycopg2.connect(config.CONNECTION_STRING)
     cursor = conn.cursor()
 except:
     print("Connection failed")
@@ -112,6 +110,5 @@ class ServiceIndicator(Resource):
 
 
 api.add_resource(ServiceIndicator, '/Indicator')
-api.add_resource(Test, '/test')
 if __name__ == '__main__':
     app.run()
