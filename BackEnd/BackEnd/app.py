@@ -43,7 +43,7 @@ def create_indicator_request(first_waypoint,second_waypoint):
         "FROM " 
         "accident " 
         "WHERE "
-        +str(rayon)+" > |/((accident.lon-("+str(center_waypoint[1])+"))^2+(+accident.lat-("+str(center_waypoint[0])+"))^2)")
+        +str(rayon) +" > |/((accident.lon-("+str(center_waypoint[1])+"))^2+(+accident.lat-("+str(center_waypoint[0])+"))^2)")
     return rqt
 
 
@@ -54,25 +54,22 @@ class ServiceIndicator(Resource):
             if json is None:
                 return {"post": []}
             waypoint_interval = 100
-            routes = json['route']
 
-            for route in routes:
+            for indexRoute, route in enumerate(request.json['response']['route']):
                 waypoints = route['shape']
-                moyIndicator = []
+                moy_indicator = []
                 for index, waypoint in enumerate(waypoints):
-                    if index > len(waypoints)-waypoint_interval:
+                    if index > len(waypoints) - waypoint_interval:
                         break
 
-                    if index%waypoint_interval == 0:
-                        rqt = create_indicator_request(waypoint,waypoints[index+waypoint_interval])
+                    if index % waypoint_interval == 0:
+                        rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
                         cursor.execute(rqt)
                         for record in cursor:
                             if record[0]:
-                                moyIndicator.append(record[0])
-
-                route['dangerLevel'] = mean(moyIndicator)
-
-            json['route'] = route
+                                moy_indicator.append(record[0])
+                route['dangerLevel'] = mean(moy_indicator)
+                json['route'][indexRoute] = route
 
             return {"response": json}
         except:
@@ -84,26 +81,22 @@ class ServiceIndicator(Resource):
             if json is None:
                 return {"post": []}
             waypoint_interval = 100
-            routes = json['route']
 
-            for route in request.json['response']['route']:
+            for indexRoute, route in enumerate(request.json['response']['route']):
                 waypoints = route['shape']
-                moyIndicator = []
-                cpt = 0
+                moy_indicator = []
                 for index, waypoint in enumerate(waypoints):
-                    if index > len(waypoints)-waypoint_interval:
+                    if index > len(waypoints) - waypoint_interval:
                         break
 
-                    if index%waypoint_interval == 0:
-                        cpt = cpt+1
-                        print(cpt)
-                        rqt = create_indicator_request(waypoint,waypoints[index+waypoint_interval])
+                    if index % waypoint_interval == 0:
+                        rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
                         cursor.execute(rqt)
                         for record in cursor:
                             if record[0]:
-                                moyIndicator.append(record[0])
-
-                route['dangerLevel'] = mean(moyIndicator)
+                                moy_indicator.append(record[0])
+                route['dangerLevel'] = mean(moy_indicator)
+                json['route'][indexRoute] = route
 
             json['route'] = route
 
@@ -118,23 +111,7 @@ class ServiceIndicator(Resource):
         return {"put": "example"}
 
 
-class Test(Resource):
-    def post(self):
-        try:
-            bidule = request.get_json()
-
-            for f in bidule["response"]["route"]:
-                value = random.randint(0, 2)
-                f["dangerLevel"] = str(value)
-                print(f["dangerLevel"])
-
-            return bidule
-        except:
-            print("Request failed")
-
-
-
-api.add_resource(ServiceIndicator,'/Indicator')
-api.add_resource(Test,'/test')
+api.add_resource(ServiceIndicator, '/Indicator')
+api.add_resource(Test, '/test')
 if __name__ == '__main__':
     app.run()
