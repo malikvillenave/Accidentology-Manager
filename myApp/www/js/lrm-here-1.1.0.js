@@ -1,5 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 function corslite(url, callback, cors) {
+	console.log("lrm-here-1.1.0 - Corslite");
     var sent = false;
 
     if (typeof window.XMLHttpRequest === 'undefined') {
@@ -39,11 +40,16 @@ function corslite(url, callback, cors) {
     }
 
     function loaded() {
+		console.log("lrm-here-1.1.0 - Loaded");
         if (
             // XDomainRequest
             x.status === undefined ||
             // modern browsers
-            isSuccessful(x.status)) callback.call(x, null, x);
+            isSuccessful(x.status))
+			{
+				console.log("Loaded IF")
+				callback.call(x, null, x);
+			}
         else callback.call(x, x, null);
     }
 
@@ -136,6 +142,7 @@ module.exports = haversine
 },{}],3:[function(require,module,exports){
 (function (global){
 (function() {
+	console.log("lrm-here-1.1.0 - FONCTION GLOBALE ----");
 	'use strict';
 
 	var L = (typeof window !== "undefined" ? window['L'] : typeof global !== "undefined" ? global['L'] : null);
@@ -197,24 +204,89 @@ module.exports = haversine
 				clearTimeout(timer);
 				if (!timedOut) {
 					if (!err) {
+						console.log("Si pas erreurs");
+						//Récupérer dans le XMLHttpRequest, la partie responseText
+						var dataJson = resp.responseText;
+						
+						//Parser pour récupérer toutes les routes possibles
+						var parseRoute = JSON.parse(dataJson);
+						var dataJsonV2 = parseRoute.response.route;
+						//console.log(dataJsonV2);
+						
+						//Générer le JSON ayant uniquement un id et une liste de waypoints
+						var sendJson = {};
+						var lengthRoute = dataJsonV2.length;
+						
+						//Analyse route par route
+						for (var i = 0; i < lengthRoute ; i++)
+						{
+							console.log("Route numero");
+			
+							//Initialisation des valeurs
+							sendJson[i] = {};
+							listeWaypoint = [];
+							var lengthShape = dataJsonV2[i].shape.length;
+							
+							//Pour tous les waypoints
+							for (var j = 0; j < lengthShape ; j++)
+							{
+								if (j%10 == 0 || j == lengthShape-1)
+								{
+									//construction liste waypoint
+									listeWaypoint.push(dataJsonV2[i].shape[j]);
+									
+									//console.log(dataJsonV2[i].shape[j]);
+									
+								}
+							}
+							//sendJson[i]['id'] = i;
+							//sendJson[i]['waypoint'] = listeWaypoint;
+							//sendJson[i]=listeWaypoint;
+							//listfinal.push(sendJson[i]);
+							
+							//Générer le JSON pour la route correspondante
+							sendJson[i]={'id':i,'waypoints':listeWaypoint};
+							
+						}
+						
+						//Afficher le JSON complet (id + waypoints)
+						console.log("Liste Final");
+						console.log(sendJson);
+						
+						/*var fs = require('fs');
+						fs.writeFile("La_Rochelle-Niort.json", sendJson, function(err)
+						{
+							if (err)
+							{
+								console.log("Creation ratee");
+							}
+						});*/
 						
 						var xhr = new XMLHttpRequest();
 
 						var url = "http://10.0.2.2:5000/Indicator";
+						
 						xhr.open("POST", url, true);
+						
+						xhr.timeout = 30000;
 						xhr.setRequestHeader("Content-type", "application/json");
                         xhr.setRequestHeader('Cache-Control', 'no-cache');
 						xhr.onreadystatechange = function () { 
 						    if (xhr.readyState == 4 && xhr.status == 200) {
 						    	document.getElementsByClassName("routesToDisplay")[0].setAttribute('style', 'display:block;');
 						    	data = null;
-						        var test = JSON.parse(xhr.response);
-						        //console.log(test);
-						        this._routeDone(test, wps, callback, context);
+						        var responseBackend = JSON.parse(xhr.response);
+								console.log("Response BackEnd");
+								console.log(responseBackend);
+								
+						        this._routeDone(responseBackend, wps, callback, context);
 						    }
 						}.bind(this);
-						var dataJson = resp.responseText;
+						//Envoi du Json au backEnd
+						
 						xhr.send(dataJson);
+						//xhr.send(sendJson);
+						console.log("Envoi xhr fait");
 
 
 					} else {
@@ -230,6 +302,8 @@ module.exports = haversine
 		},
 
 		_routeDone: function(response, inputWaypoints, callback, context) {
+			console.log("Response");
+			console.log(response);
 			var alts = [],
 			    waypoints,
 			    waypoint,
@@ -282,6 +356,8 @@ module.exports = haversine
 						waypoint.mappedPosition.longitude));
 				}
 
+				console.log("Danger Level");
+				console.log(response.response.route[i].dangerLevel);
 				alts.push({
 					name: '',
 					coordinates: coordinates,
@@ -300,6 +376,7 @@ module.exports = haversine
 		},
 
 		_decodeGeometry: function(geometry) {
+			console.log("decodeGeometry");
 			var latlngs = new Array(geometry.length),
 				coord,
 				i;
@@ -312,6 +389,7 @@ module.exports = haversine
 		},
 
 		buildRouteUrl: function(waypoints, options) {
+			console.log("buildRouteUrl");
 			var locs = [],
 				i,
 				alternatives,
@@ -339,6 +417,7 @@ module.exports = haversine
 		},
 
 		_convertInstruction: function(instruction, coordinates, startingSearchIndex) {
+			console.log("convertInstruction");
 			var i,
 			distance,
 			closestDistance = 0,
