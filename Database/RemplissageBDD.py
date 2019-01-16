@@ -77,8 +77,8 @@ for row in merged.itertuples(index=True, name='Pandas'):
             "" + str(getattr(row,"catv")) + ", "                                                                #id type vehicule
             "(SELECT id_usager FROM public.usager WHERE genre='"+str(genreletter)+"' AND age="+str(age)+" AND num_usager="+str(getattr(row,"catu"))+"), "               #id usager
             "" + str(atm) + ", "                                                                                #id meteo
-            "" + str(getattr(row,"lat")) + ", "                                                                 #latitude
-            "" + str(getattr(row,"long")) + ", "                                                                #longitude
+            "" + str(getattr(row,"lat")/100000) + ", "                                                                 #latitude
+            "" + str(getattr(row,"long")/100000) + ", "                                                                #longitude
             "'" + grav(getattr(row,"grav")) + "', "                                                             #gravite
             "" + str(getattr(row,"ind")) + " "                                                                  #indicateur
             ") ON CONFLICT DO NOTHING")
