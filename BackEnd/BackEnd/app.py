@@ -39,9 +39,9 @@ def create_indicator_request(first_waypoint,second_waypoint):
     rayon = round(math.sqrt((center_waypoint[0]-first_waypoint_coord[0])**2)+((center_waypoint[1]-first_waypoint_coord[1])**2),7)
     rqt = ("SELECT avg(indicateur) " 
         "FROM " 
-        "accident " 
+        "usager_accidente_par_vehicule as usg " 
         "WHERE "
-        +str(rayon) +" > |/((accident.lon-("+str(center_waypoint[1])+"))^2+(+accident.lat-("+str(center_waypoint[0])+"))^2)")
+        +str(rayon) +" > |/((usg.longitude-("+str(center_waypoint[1])+"))^2+(+usg.latitude-("+str(center_waypoint[0])+"))^2)")
     return rqt
 
 
@@ -70,14 +70,15 @@ class ServiceIndicator(Resource):
                 json['route'][indexRoute] = route
 
             return {"response": json}
-        except:
-            print("Request failed")
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
 
     def post(self):
         try:
             json = request.json['response']
             if json is None:
-                return {"post": []}
+                return {"post": []}, 405
             waypoint_interval = 100
 
             for indexRoute, route in enumerate(request.json['response']['route']):
@@ -97,10 +98,12 @@ class ServiceIndicator(Resource):
                 json['route'][indexRoute] = route
 
             json['route'] = route
+            print(json)
 
             return {"response": json}
-        except:
-            print("Request failed")
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
 
     def delete(self):
         return {"delete": "example"}
