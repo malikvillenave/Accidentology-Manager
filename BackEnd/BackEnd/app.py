@@ -111,6 +111,76 @@ class ServiceIndicator(Resource):
         return {"put": "example"}
 
 
+
+class ServiceIndicatorLight(Resource):
+    def get(self):
+        try:
+            json = request.json['response']
+            if json is None:
+                return {"post": []}
+            waypoint_interval = 100
+
+            for indexRoute, route in enumerate(request.json['response']['route']):
+                waypoints = route['shape']
+                moy_indicator = []
+                for index, waypoint in enumerate(waypoints):
+                    if index > len(waypoints) - waypoint_interval:
+                        break
+
+                    if index % waypoint_interval == 0:
+                        rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
+                        cursor.execute(rqt)
+                        for record in cursor:
+                            if record[0]:
+                                moy_indicator.append(record[0])
+                route['dangerLevel'] = mean(moy_indicator)
+                json['route'][indexRoute] = route
+
+            return {"response": json}
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
+
+    def post(self):
+        try:
+            json = request.json['response']
+            if json is None:
+                return {"post": []}, 405
+            waypoint_interval = 100
+
+            for indexRoute, route in enumerate(request.json['response']['route']):
+                waypoints = route['shape']
+                moy_indicator = []
+                for index, waypoint in enumerate(waypoints):
+                    if index > len(waypoints) - waypoint_interval:
+                        break
+
+                    if index % waypoint_interval == 0:
+                        rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
+                        cursor.execute(rqt)
+                        for record in cursor:
+                            if record[0]:
+                                moy_indicator.append(record[0])
+                route['dangerLevel'] = mean(moy_indicator)
+                json['route'][indexRoute] = route
+
+            json['route'] = route
+
+            return {"response": json}
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
+
+    def delete(self):
+        return {"delete": "example"}
+
+    def put(self):
+        return {"put": "example"}
+
+
 api.add_resource(ServiceIndicator, '/Indicator')
+
+api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
+
 if __name__ == '__main__':
     app.run()
