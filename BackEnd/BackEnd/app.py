@@ -271,9 +271,78 @@ class ServiceIndicatorThreadTest(Resource):
     def put(self):
         return {"put": "example"}
 
+
+def processWaypointQueue(waypoint,waypoints,q,index):
+    waypoint_interval = 100 #place temporairement ici
+    rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
+    dangerLevel = 0
+    sem.acquire()
+    cursor.execute(rqt)
+    for record in cursor:
+        if record[0]:
+            dangerLevel = record[0]
+    sem.release()
+    q.put(dangerLevel)
+
+
+class ServiceIndicatorThreadTest2(Resource):
+    def get(self):
+        return {"get": "example"}
+
+    def post(self):
+        try:
+            start = time.time()
+
+            resQueue = queue.Queue()
+
+            json = request.json['response']
+            if json is None:
+                return {"post": []}, 405
+
+            waypoint_interval = 100
+
+            for indexRoute, route in enumerate(request.json['response']['route']):
+                waypoints = route['shape']
+                moy_indicator = []
+                threads = []
+
+                for index, waypoint in enumerate(waypoints):
+                    if index > len(waypoints) - waypoint_interval:
+                        break
+
+                    if index % waypoint_interval == 0:
+                        t = Thread(target=processWaypointQueue, args=(waypoint, waypoints, resQueue, index))
+                        t.start()
+                        threads.append(t)
+
+                for t in threads:
+                    t.join()
+
+                while not resQueue.empty():
+                    result = resQueue.get()
+                    moy_indicator.append(result)
+
+                json['route'][indexRoute]['dangerLevel'] = mean(moy_indicator)
+
+            end = time.time()
+            print(end - start)
+
+            return {"response": json}
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
+
+    def delete(self):
+        return {"delete": "example"}
+
+    def put(self):
+        return {"put": "example"}
+
+
 api.add_resource(ServiceIndicator, '/Indicator')
 api.add_resource(ServiceIndicatorTimeTest, '/IndicatorTime')
 api.add_resource(ServiceIndicatorMPTest, '/IndicatorMP')
 api.add_resource(ServiceIndicatorThreadTest, '/IndicatorThread')
+api.add_resource(ServiceIndicatorThreadTest2, '/IndicatorThread2')
 if __name__ == '__main__':
     app.run()
