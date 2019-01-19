@@ -15898,7 +15898,6 @@ module.exports={
 				!this._router.requiresMoreDetail) {
 				return;
 			}
-            console.log("Test 6");
 			var map = this._map;
 			if (this._router.requiresMoreDetail(this._selectedRoute,
 					map.getZoom(), map.getBounds())) {
@@ -15921,7 +15920,7 @@ module.exports={
 
 		onAdd: function(map) {
 			if (this.options.autoRoute) {
-			    console.log("Test 1");
+		
 				this.route();
 			}
 
@@ -16047,7 +16046,6 @@ module.exports={
 		},
 
         _selectPrimaryColorFromDangerLevel: function(dangerLevel){
-		    console.log(dangerLevel);
             if(dangerLevel < "3.33"){
                 return "#35C236";
             }
@@ -16064,7 +16062,6 @@ module.exports={
 
 
         _selectColorFromDanger: function(dangerLevel,alt){
-            console.log(dangerLevel);
             if(dangerLevel < "3.33"){
                 if(alt){
                     return {styles : [{color: 'black', opacity: 0.07, weight: 9},
@@ -16157,7 +16154,6 @@ module.exports={
 		_onWaypointsChanged: function(e) {
 			if (this.options.autoRoute) {
 				this.route({});
-                console.log("Test 2");
 			}
 			if (!this._plan.isReady()) {
 				this._clearLines();
@@ -16167,7 +16163,6 @@ module.exports={
 		},
 
 		_setupRouteDragging: function() {
-            console.log("Test 3");
 			var timer = 0,
 				waypoints;
 
@@ -16913,7 +16908,6 @@ module.exports = L.Routing = {
 
 		_createAlternative: function(alt, i) {
 		    var fixednumber = parseFloat(alt.dangerLevel).toFixed(2);
-		    console.log(fixednumber);
 			var altDiv = L.DomUtil.create('div', 'leaflet-routing-alt ' +
 				this.options.alternativeClassName +
 				(i > 0 ? ' leaflet-routing-alt-minimized ' + this.options.minimizedClassName : ' selectedRoute ')),

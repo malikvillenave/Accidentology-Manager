@@ -4,10 +4,11 @@ import psycopg2
 import math
 import json
 from numpy import mean
+from werkzeug.serving import WSGIRequestHandler
 
 app = Flask(__name__)
 
-connectionString = "dbname=accidentology_light user=postgres host=localhost password=postgres port=5432"
+connectionString = "dbname=accidentologie user=postgres host=localhost password=postgres port=5432"
 
 try:
     conn = psycopg2.connect(connectionString)
@@ -84,9 +85,8 @@ class ServiceIndicator(Resource):
             if json is None:
                 return {"post": []}
             waypoint_interval = 100
-            routes = json['route']
 
-            for route in request.json['response']['route']:
+            for indexRoute, route in enumerate(request.json['response']['route']):
                 waypoints = route['shape']
                 moyIndicator = []
                 cpt = 0
@@ -102,12 +102,11 @@ class ServiceIndicator(Resource):
                         for record in cursor:
                             if record[0]:
                                 moyIndicator.append(record[0])
-
                 route['dangerLevel'] = mean(moyIndicator)
+                json['route'][indexRoute] = route
+            return {"response":json}
 
-            json['route'] = route
-
-            return {"response": json}
+           # return {"response": json},200,{'Content-Type':'application/json'}
         except:
             print("Request failed")
 
@@ -116,6 +115,12 @@ class ServiceIndicator(Resource):
 
     def put(self):
         return {"put": "example"}
+
+
+class WeatherCurrentDataManagement(Resource):
+    def post(self):
+        #gerer les données météos chaudes
+        return 
 
 
 class Test(Resource):
@@ -135,6 +140,8 @@ class Test(Resource):
 
 
 api.add_resource(ServiceIndicator,'/Indicator')
+api.add_resource(WeatherCurrentDataManagement,'/Weather')
 api.add_resource(Test,'/test')
 if __name__ == '__main__':
+    WSGIRequestHandler.protocol_version = "HTTP/1.1"
     app.run()

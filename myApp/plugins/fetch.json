@@ -1,16 +1,8 @@
 {
-  "cordova-plugin-whitelist": {
-    "source": {
-      "type": "registry",
-      "id": "cordova-plugin-whitelist@1"
-    },
-    "is_top_level": true,
-    "variables": {}
-  },
   "cordova-plugin-geolocation": {
     "source": {
       "type": "registry",
-      "id": "cordova-plugin-geolocation@^4.0.1"
+      "id": "cordova-plugin-geolocation@4.0.1"
     },
     "is_top_level": true,
     "variables": {}
@@ -18,7 +10,7 @@
   "cordova-plugin-locationservices": {
     "source": {
       "type": "registry",
-      "id": "cordova-plugin-locationservices@^2.1.0"
+      "id": "cordova-plugin-locationservices"
     },
     "is_top_level": true,
     "variables": {}
@@ -27,6 +19,14 @@
     "source": {
       "type": "registry",
       "id": "cordova-plugin-splashscreen@5.0.2"
+    },
+    "is_top_level": true,
+    "variables": {}
+  },
+  "cordova-plugin-whitelist": {
+    "source": {
+      "type": "registry",
+      "id": "cordova-plugin-whitelist@1"
     },
     "is_top_level": true,
     "variables": {}

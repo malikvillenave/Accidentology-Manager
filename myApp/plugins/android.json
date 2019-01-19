@@ -7,17 +7,17 @@
     "files": {}
   },
   "installed_plugins": {
-    "cordova-plugin-whitelist": {
-      "PACKAGE_NAME": "bidule.com"
-    },
     "cordova-plugin-geolocation": {
-      "PACKAGE_NAME": "bidule.com"
+      "PACKAGE_NAME": "io.cordova.hellocordova"
     },
     "cordova-plugin-locationservices": {
-      "PACKAGE_NAME": "bidule.com"
+      "PACKAGE_NAME": "io.cordova.hellocordova"
     },
     "cordova-plugin-splashscreen": {
-      "PACKAGE_NAME": "bidule.com"
+      "PACKAGE_NAME": "io.cordova.hellocordova"
+    },
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "io.cordova.hellocordova"
     }
   },
   "dependent_plugins": {}
