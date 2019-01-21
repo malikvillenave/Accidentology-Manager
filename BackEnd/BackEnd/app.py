@@ -7,6 +7,7 @@ import config
 
 app = Flask(__name__)
 
+
 try:
     conn = psycopg2.connect(config.CONNECTION_STRING)
     cursor = conn.cursor()
@@ -115,14 +116,15 @@ class ServiceIndicator(Resource):
 class ServiceIndicatorLight(Resource):
     def get(self):
         try:
-            json = request.json['response']
-            if json is None:
-                return {"post": []}
-            waypoint_interval = 100
 
-            for indexRoute, route in enumerate(request.json['response']['route']):
-                waypoints = route['shape']
+            json = request.json
+            waypoint_interval = 10
+
+            for id in json:
+
+                waypoints = request.json[id]['waypoints']
                 moy_indicator = []
+
                 for index, waypoint in enumerate(waypoints):
                     if index > len(waypoints) - waypoint_interval:
                         break
@@ -133,8 +135,14 @@ class ServiceIndicatorLight(Resource):
                         for record in cursor:
                             if record[0]:
                                 moy_indicator.append(record[0])
-                route['dangerLevel'] = mean(moy_indicator)
-                json['route'][indexRoute] = route
+                if (not moy_indicator):
+                    moy_indicator = [1]
+                request.json[id]['dangerLevel'] = mean(moy_indicator)
+
+            if json is None:
+                return {"post": []}, 405
+
+
 
             return {"response": json}
         except Exception as e:
@@ -143,14 +151,15 @@ class ServiceIndicatorLight(Resource):
 
     def post(self):
         try:
-            json = request.json['response']
-            if json is None:
-                return {"post": []}, 405
-            waypoint_interval = 100
 
-            for indexRoute, route in enumerate(request.json['response']['route']):
-                waypoints = route['shape']
+            json = request.json
+            waypoint_interval = 10
+
+            for id in json:
+
+                waypoints = request.json[id]['waypoints']
                 moy_indicator = []
+
                 for index, waypoint in enumerate(waypoints):
                     if index > len(waypoints) - waypoint_interval:
                         break
@@ -161,10 +170,14 @@ class ServiceIndicatorLight(Resource):
                         for record in cursor:
                             if record[0]:
                                 moy_indicator.append(record[0])
-                route['dangerLevel'] = mean(moy_indicator)
-                json['route'][indexRoute] = route
+                if (not moy_indicator):
+                    moy_indicator = [1]
+                request.json[id]['dangerLevel'] = mean(moy_indicator)
 
-            json['route'] = route
+            if json is None:
+                return {"post": []}, 405
+
+
 
             return {"response": json}
         except Exception as e:
