@@ -4,7 +4,6 @@ import psycopg2
 import math
 from numpy import mean
 import config
-import time
 from threading import Thread, Semaphore
 import queue
 
@@ -68,8 +67,6 @@ class ServiceIndicator(Resource):
 
     def post(self):
         try:
-            start = time.time()
-
             res_queue = queue.Queue()
 
             json = request.json['response']
@@ -100,8 +97,6 @@ class ServiceIndicator(Resource):
                     moy_indicator.append(result)
 
                 json['route'][indexRoute]['dangerLevel'] = mean(moy_indicator)
-
-            end = time.time()
 
             return {"response": json}
         except Exception as e:
