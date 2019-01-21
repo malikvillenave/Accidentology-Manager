@@ -211,49 +211,40 @@ module.exports = haversine
 						
 						//Parser pour récupérer toutes les routes possibles
 						var parseRoute = JSON.parse(dataJson);
-						var dataJsonV2 = parseRoute.response.route;
+						//var dataJsonV2 = parseRoute.response.route;
 						//console.log(dataJsonV2);
 						
-						//Générer le JSON ayant uniquement un id et une liste de waypoints
-						var listefinal={};
-						var sendJson = {};
-						var lengthRoute = dataJsonV2.length;
+						//Ajout d'un attribut id pour chaque route détectée
+						parseRoute.response.route.map(function(route,index) {
+							route['id'] = index;
+						});
+						console.log(parseRoute);
 						
-						//Analyse route par route
-						for (var i = 0; i < lengthRoute ; i++)
+						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
+						var dataJsonLight = parseRoute.response.route.map(function(route)
 						{
-							//console.log("Route numero");
-			
-							//Initialisation des valeurs
-							sendJson[i] = {};
-							var listeWaypoint = [];
-							var lengthShape = dataJsonV2[i].shape.length;
-							
-							//Pour tous les waypoints
-							for (var j = 0; j < lengthShape ; j++)
-							{
-								if (j%10 == 0 || j == lengthShape-1)
-								{
-									//construction liste waypoint
-									listeWaypoint.push(dataJsonV2[i].shape[j]);
-									
-									//console.log(dataJsonV2[i].shape[j]);
-									
-								}
+							return {
+								id:route.id,
+								//meteo: route.meteo,
+								waypoints: route.shape.filter(function(shape,index) {
+									return index % 10 == 0;
+								})
 							}
-						
-							
-							//Générer le JSON pour la route correspondante
-							sendJson[i]={'id':i,'waypoints':listeWaypoint};
-							
-							
+						});
+						console.log(dataJsonLight);
+
+						/*var dataJsonWithId.route.map(route => {
+						return {
+							id:route.id,
+							meteo: route.meteo,
+							waypoints: route.shapes.filter((shape,index) => index % 10 == 0)
 						}
+						})*/
 						
 						//Afficher le JSON complet (id + waypoints)
 						console.log("Liste Final");
-						listefinal={'response':sendJson};
-						console.log(listefinal);
-						
+						//listefinal={'response':sendJson};
+						//console.log(listefinal);
 						
 						
 						var xhr = new XMLHttpRequest();
@@ -269,7 +260,6 @@ module.exports = haversine
 						    if (xhr.readyState == 4 && xhr.status == 200) {
 						    	document.getElementsByClassName("routesToDisplay")[0].setAttribute('style', 'display:block;');
 						    	
-
 						        var responseBackend = JSON.parse(xhr.response);
 								console.log("Response BackEnd");
 								console.log(responseBackend);
