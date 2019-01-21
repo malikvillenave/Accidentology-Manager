@@ -3,3 +3,4 @@
 .directory
 myApp/platforms/
 */__*
+BackEnd/BackEnd/config.py
