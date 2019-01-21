@@ -1,5 +1,4 @@
-*/.idea
-*/.directory
-.directory
+**/.idea
+**/.directory
 myApp/platforms/
-*/__*
+**/__*
