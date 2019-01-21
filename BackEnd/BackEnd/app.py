@@ -5,6 +5,7 @@ import math
 from numpy import mean
 import config
 from threading import Thread, Semaphore
+from werkzeug.serving import WSGIRequestHandler
 import queue
 
 app = Flask(__name__)
@@ -40,15 +41,15 @@ def create_indicator_request(first_waypoint, second_waypoint):
     second_waypoint_coord = [round(float(x), 7) for x in second_waypoint.split(",")]
     center_waypoint = [round((second_waypoint_coord[0]+first_waypoint_coord[0])/2, 7), round((second_waypoint_coord[1]+first_waypoint_coord[1])/2, 7)]
     rayon = round(math.sqrt((center_waypoint[0]-first_waypoint_coord[0])**2)+((center_waypoint[1]-first_waypoint_coord[1])**2), 7)
-    rqt = ("SELECT avg(indicateur) " 
-        "FROM " 
-        "usager_accidente_par_vehicule as usg " 
-        "WHERE "
-        +str(rayon) +" > |/((usg.longitude-("+str(center_waypoint[1])+"))^2+(+usg.latitude-("+str(center_waypoint[0])+"))^2)")
+    rqt = ('SELECT avg(indicateur) '
+           'FROM '
+           'usager_accidente_par_vehicule as usg '
+           'WHERE '
+           + str(rayon) +' > |/((usg.longitude-(' + str(center_waypoint[1]) +'))^2+(+usg.latitude-(' + str(center_waypoint[0]) +'))^2)')
     return rqt
 
 
-def processWaypointQueue(waypoint,waypoints,q,index):
+def processWaypointQueue(waypoint, waypoints, q, index):
     waypoint_interval = 100 #place temporairement ici
     rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
     danger_level = 0
@@ -71,7 +72,7 @@ class ServiceIndicator(Resource):
 
             json = request.json['response']
             if json is None:
-                return {"post": []}, 405
+                return {"response": "JSon not found"}, 404
 
             waypoint_interval = 100
 
@@ -101,7 +102,7 @@ class ServiceIndicator(Resource):
             return {"response": json}
         except Exception as e:
             print(e)
-            return {"response": {}}, 404
+            return {"response": "An internal error occurred"}, 404
 
     def delete(self):
         return {"delete": "not implemented"}
@@ -112,4 +113,5 @@ class ServiceIndicator(Resource):
 
 api.add_resource(ServiceIndicator, '/Indicator')
 if __name__ == '__main__':
+    WSGIRequestHandler.protocol_version = "HTTP/1.1"
     app.run()
