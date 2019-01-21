@@ -35,11 +35,11 @@ sem = Semaphore()
 #         "AND usg.latitude > " + (waypoint['lat'] + interval)
 
 
-def create_indicator_request(first_waypoint,second_waypoint):
-    first_waypoint_coord = [round(float(x),7) for x in first_waypoint.split(",")]
-    second_waypoint_coord = [round(float(x),7) for x in second_waypoint.split(",")]
-    center_waypoint = [round((second_waypoint_coord[0]+first_waypoint_coord[0])/2,7), round((second_waypoint_coord[1]+first_waypoint_coord[1])/2,7)]
-    rayon = round(math.sqrt((center_waypoint[0]-first_waypoint_coord[0])**2)+((center_waypoint[1]-first_waypoint_coord[1])**2),7)
+def create_indicator_request(first_waypoint, second_waypoint):
+    first_waypoint_coord = [round(float(x), 7) for x in first_waypoint.split(",")]
+    second_waypoint_coord = [round(float(x), 7) for x in second_waypoint.split(",")]
+    center_waypoint = [round((second_waypoint_coord[0]+first_waypoint_coord[0])/2, 7), round((second_waypoint_coord[1]+first_waypoint_coord[1])/2, 7)]
+    rayon = round(math.sqrt((center_waypoint[0]-first_waypoint_coord[0])**2)+((center_waypoint[1]-first_waypoint_coord[1])**2), 7)
     rqt = ("SELECT avg(indicateur) " 
         "FROM " 
         "usager_accidente_par_vehicule as usg " 
