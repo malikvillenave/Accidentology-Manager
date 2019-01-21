@@ -218,7 +218,9 @@ module.exports = haversine
 						parseRoute.response.route.map(function(route,index) {
 							route['id'] = index;
 						});
-						console.log(parseRoute);
+						//console.log(parseRoute);
+
+						
 						
 						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
 						var dataJsonLight = parseRoute.response.route.map(function(route)
@@ -231,7 +233,7 @@ module.exports = haversine
 								})
 							}
 						});
-						console.log(dataJsonLight);
+						
 
 						/*var dataJsonWithId.route.map(route => {
 						return {
@@ -242,14 +244,14 @@ module.exports = haversine
 						})*/
 						
 						//Afficher le JSON complet (id + waypoints)
-						console.log("Liste Final");
+						//console.log("Liste Final");
 						//listefinal={'response':sendJson};
 						//console.log(listefinal);
 						
 						
 						var xhr = new XMLHttpRequest();
 
-						var url = "http://10.0.2.2:5000/Indicator";
+						var url = "http://10.0.2.2:5000/IndicatorLight";
 						
 						xhr.open("POST", url, true);
 						
@@ -261,18 +263,24 @@ module.exports = haversine
 						    	document.getElementsByClassName("routesToDisplay")[0].setAttribute('style', 'display:block;');
 						    	
 						        var responseBackend = JSON.parse(xhr.response);
-								console.log("Response BackEnd");
-								console.log(responseBackend);
+
+						        //traitement reponse backend
+						        //console.log('id : '+responseBackend.response[0].id)
+								parseRoute.response.route.map(function(route,index) {
+									if(route['id'] == responseBackend.response[index].id ){
+
+										route['dangerLevel'] = responseBackend.response[index].dangerLevel;
+									}
+								});
+								console.log("Affichage resultat traitement");
+								console.log(parseRoute);
 								
-						        this._routeDone(responseBackend, wps, callback, context);
+						       this._routeDone(parseRoute, wps, callback, context);
 						    }
 						}.bind(this);
 						//Envoi du Json au backEnd
-						var dataJson = resp.responseText;
-
-						//console.log('reponse here :'+dataJson);
-						//xhr.send(dataJson);
-						xhr.send(dataJson);
+						//console.log(JSON.stringify(dataJsonLight));
+						xhr.send(JSON.stringify(dataJsonLight));
 						//console.log("Envoi xhr fait");
 
 
