@@ -10,6 +10,7 @@ import queue
 
 app = Flask(__name__)
 
+
 try:
     conn = psycopg2.connect(config.CONNECTION_STRING)
     cursor = conn.cursor()
@@ -111,7 +112,89 @@ class ServiceIndicator(Resource):
         return {"put": "not implemented"}
 
 
+
+class ServiceIndicatorLight(Resource):
+    def get(self):
+        try:
+
+            json = request.json
+            waypoint_interval = 10
+
+            for id in json:
+
+                waypoints = request.json[id]['waypoints']
+                moy_indicator = []
+
+                for index, waypoint in enumerate(waypoints):
+                    if index > len(waypoints) - waypoint_interval:
+                        break
+
+                    if index % waypoint_interval == 0:
+                        rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
+                        cursor.execute(rqt)
+                        for record in cursor:
+                            if record[0]:
+                                moy_indicator.append(record[0])
+                if (not moy_indicator):
+                    moy_indicator = [1]
+                request.json[id]['dangerLevel'] = mean(moy_indicator)
+
+            if json is None:
+                return {"post": []}, 405
+
+
+
+            return {"response": json}
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
+
+    def post(self):
+        try:
+
+            json = request.json
+            waypoint_interval = 10
+
+            for id in json:
+
+                waypoints = request.json[id]['waypoints']
+                moy_indicator = []
+
+                for index, waypoint in enumerate(waypoints):
+                    if index > len(waypoints) - waypoint_interval:
+                        break
+
+                    if index % waypoint_interval == 0:
+                        rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
+                        cursor.execute(rqt)
+                        for record in cursor:
+                            if record[0]:
+                                moy_indicator.append(record[0])
+                if (not moy_indicator):
+                    moy_indicator = [1]
+                request.json[id]['dangerLevel'] = mean(moy_indicator)
+
+            if json is None:
+                return {"post": []}, 405
+
+
+
+            return {"response": json}
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
+
+    def delete(self):
+        return {"delete": "example"}
+
+    def put(self):
+        return {"put": "example"}
+
+
 api.add_resource(ServiceIndicator, '/Indicator')
+
+api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
+
 if __name__ == '__main__':
     WSGIRequestHandler.protocol_version = "HTTP/1.1"
     app.run()
