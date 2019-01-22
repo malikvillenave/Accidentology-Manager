@@ -29,6 +29,7 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <splash density="port-xxhdpi" src="res\screen\android\splashscreen.png" />
     <allow-navigation href="*" />
     <allow-intent href="market:*" />
     <preference name="loglevel" value="DEBUG" />

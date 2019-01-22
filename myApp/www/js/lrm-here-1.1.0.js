@@ -156,7 +156,7 @@ module.exports = haversine
 			serviceUrl: 'https://route.cit.api.here.com/routing/7.2/calculateroute.json',
 			timeout: 30 * 1000,
 			alternatives: 0,
-			mode: 'fastest;car',
+			mode: 'fastest;car;traffic:enabled',
 			urlParameters: {}
 		},
 
@@ -218,22 +218,38 @@ module.exports = haversine
 						parseRoute.response.route.map(function(route,index) {
 							route['id'] = index;
 						});
-						//console.log(parseRoute);
+						console.log('affichage de parseRoute');
+						console.log(parseRoute);
 
+						
+
+						
+					
+					
 						
 						
 						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
 						var dataJsonLight = parseRoute.response.route.map(function(route)
 						{
+							
 							return {
 								id:route.id,
+								//min
 								//meteo: route.meteo,
 								waypoints: route.shape.filter(function(shape,index) {
 									return index % 10 == 0;
 								})
 							}
 						});
-						
+
+						// recuperation de la date heure min de l'user
+						//	var date = currentDate.getDate();
+						var currentDate = new Date();
+						dataJsonLight['heure'] = currentDate.getHours();
+						dataJsonLight['min'] = currentDate.getMinutes();
+
+						console.log('datajson');
+						console.log(dataJsonLight);
 
 						/*var dataJsonWithId.route.map(route => {
 						return {
