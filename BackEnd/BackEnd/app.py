@@ -155,9 +155,9 @@ class ServiceIndicatorLight(Resource):
             json = request.json
             waypoint_interval = 10
 
-            for id in json:
+            for route in json:
 
-                waypoints = request.json[id]['waypoints']
+                waypoints = route['waypoints']
                 moy_indicator = []
 
                 for index, waypoint in enumerate(waypoints):
@@ -172,7 +172,7 @@ class ServiceIndicatorLight(Resource):
                                 moy_indicator.append(record[0])
                 if (not moy_indicator):
                     moy_indicator = [1]
-                request.json[id]['dangerLevel'] = mean(moy_indicator)
+                route['dangerLevel'] = mean(moy_indicator)
 
             if json is None:
                 return {"post": []}, 405
