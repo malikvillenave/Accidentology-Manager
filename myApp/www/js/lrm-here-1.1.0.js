@@ -221,7 +221,7 @@ module.exports = haversine
 												
 						var xhr = new XMLHttpRequest();
 
-						var url = "http://10.0.2.2:5000/Indicator";
+						var url = "http://10.0.2.2:5000/IndicatorLight";
 						
 						xhr.open("POST", url, true);
 						
