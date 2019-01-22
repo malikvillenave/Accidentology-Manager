@@ -43,7 +43,10 @@ function corslite(url, callback, cors) {
             // XDomainRequest
             x.status === undefined ||
             // modern browsers
-            isSuccessful(x.status)) callback.call(x, null, x);
+            isSuccessful(x.status))
+			{
+				callback.call(x, null, x);
+			}
         else callback.call(x, x, null);
     }
 
@@ -137,7 +140,6 @@ module.exports = haversine
 (function (global){
 (function() {
 	'use strict';
-
 	var L = (typeof window !== "undefined" ? window['L'] : typeof global !== "undefined" ? global['L'] : null);
 	var corslite = require('corslite');
 	var haversine = require('haversine');
@@ -170,8 +172,7 @@ module.exports = haversine
 
 			options = options || {};
 			url = this.buildRouteUrl(waypoints, options);
-			console.log(url);
-			timer = setTimeout(function() {
+			timer = setTimeout(30000000,function() {
 								timedOut = true;
 								callback.call(context || callback, {
 									status: -1,
@@ -192,30 +193,61 @@ module.exports = haversine
 			}
 
 			corslite(url, L.bind(function(err, resp) {
-				var data;
-
-				clearTimeout(timer);
+				//clearTimeout(timer);
 				if (!timedOut) {
 					if (!err) {
+						//Récupérer dans le XMLHttpRequest, la partie responseText
+						var dataJson = resp.responseText;
 						
+						//Parser pour récupérer toutes les routes possibles
+						var parseRoute = JSON.parse(dataJson);
+						
+						//Ajout d'un attribut id pour chaque route détectée
+						parseRoute.response.route.map(function(route,index) {
+							route['id'] = index;
+						});
+						
+						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
+						var dataJsonLight = parseRoute.response.route.map(function(route)
+						{
+							return {
+								id:route.id,
+								//meteo: route.meteo,
+								waypoints: route.shape.filter(function(shape,index) {
+									return index % 10 == 0;
+								})
+							}
+						});
+												
 						var xhr = new XMLHttpRequest();
 
-						var url = "http://10.0.2.2:5000/Indicator";
+						var url = "http://10.0.2.2:5000/IndicatorLight";
+						
 						xhr.open("POST", url, true);
+						
+						xhr.timeout = 30*1000*1000;
 						xhr.setRequestHeader("Content-type", "application/json");
                         xhr.setRequestHeader('Cache-Control', 'no-cache');
 						xhr.onreadystatechange = function () { 
 						    if (xhr.readyState == 4 && xhr.status == 200) {
 						    	document.getElementsByClassName("routesToDisplay")[0].setAttribute('style', 'display:block;');
-						    	data = null;
-						        var test = JSON.parse(xhr.response);
-						        //console.log(test);
-						        this._routeDone(test, wps, callback, context);
+						    	
+						        var responseBackend = JSON.parse(xhr.response);
+
+						        //traitement reponse backend
+								parseRoute.response.route.map(function(route,index) {
+									if(route['id'] == responseBackend.response[index].id ){
+
+										route['dangerLevel'] = responseBackend.response[index].dangerLevel;
+									}
+								});
+								
+						       this._routeDone(parseRoute, wps, callback, context);
 						    }
 						}.bind(this);
-						var dataJson = resp.responseText;
-						xhr.send(dataJson);
 
+						//Envoi du Json au backEnd
+						xhr.send(JSON.stringify(dataJsonLight));
 
 					} else {
 						callback.call(context || callback, {
@@ -230,6 +262,7 @@ module.exports = haversine
 		},
 
 		_routeDone: function(response, inputWaypoints, callback, context) {
+		
 			var alts = [],
 			    waypoints,
 			    waypoint,
