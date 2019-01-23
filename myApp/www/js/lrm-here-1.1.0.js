@@ -218,11 +218,19 @@ module.exports = haversine
 						parseRoute.response.route.map(function(route,index) {
 							route['id'] = index;
 						});
+<<<<<<< HEAD
 						//console.log('affichage de parseRoute');
 						//console.log(parseRoute);
 
 					//Récupération des coordonnées GPS du point de départ
 					//Servira pour la requete pour OpenWeather
+=======
+						console.log('affichage de parseRoute');
+						console.log(parseRoute);
+
+						//Récupération des coordonnées GPS du point de départ
+						//Servira pour la requete pour OpenWeather
+>>>>>>> 5fc85506875154a0175d07f4ba5c7a9afea11054
 						var latGPS = parseRoute.response.route[0].waypoint[0].originalPosition.latitude;
 						var lonGPS = parseRoute.response.route[0].waypoint[0].originalPosition.longitude;
 						var weatherJSONid;
@@ -231,6 +239,7 @@ module.exports = haversine
 						
 						var xhr = new XMLHttpRequest();
 
+<<<<<<< HEAD
 						var url =urlWeather;
 						
 						xhr.open("GET", url, false);
@@ -247,20 +256,31 @@ module.exports = haversine
 						xhr.send(null);
 					
 						
+=======
+						var requestWeather = $.get(urlWeather, function(data, status){
+							weatherJSONid = data.weather[0].id;
+							weatherJSONmain = data.weather[0].main;
+							console.log(weatherJSONid);
+						});
+>>>>>>> 5fc85506875154a0175d07f4ba5c7a9afea11054
 						var currentDate = new Date();
 						
 						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
 						var dataJsonLight = {
-
 								heure: currentDate.getHours(),
 								min:currentDate.getMinutes(),
 								meteo: {
+<<<<<<< HEAD
 										id:weatherJSONid,
 										main:weatherJSONmain
 										},
+=======
+									id:weatherJSONid,
+									main:weatherJSONmain
+								},
+>>>>>>> 5fc85506875154a0175d07f4ba5c7a9afea11054
 								routes: parseRoute.response.route.map(function(route)
 								{
-								
 									return {
 
 										id:route.id,
@@ -272,7 +292,17 @@ module.exports = haversine
 								})
 								
 						};
+<<<<<<< HEAD
 				
+=======
+						
+
+						// recuperation de la date heure min de l'user
+						//	var date = currentDate.getDate();
+						
+
+						
+>>>>>>> 5fc85506875154a0175d07f4ba5c7a9afea11054
 
 						//console.log('affichage du json a envoyer');
 						//console.log(dataJsonLight);
@@ -309,6 +339,9 @@ module.exports = haversine
 						}.bind(this);
 						//Envoi du Json au backEnd
 						
+						console.log('JSON Light');
+						console.log(dataJsonLight);
+
 						xhr.send(JSON.stringify(dataJsonLight));
 						//console.log("Envoi xhr fait");
 
