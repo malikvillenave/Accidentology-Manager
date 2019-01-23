@@ -221,28 +221,36 @@ module.exports = haversine
 						console.log('affichage de parseRoute');
 						console.log(parseRoute);
 
+						//Récupération des coordonnées GPS du point de départ
+						//Servira pour la requete pour OpenWeather
+						var latGPS = parseRoute.response.route[0].waypoint[0].originalPosition.latitude;
+						var lonGPS = parseRoute.response.route[0].waypoint[0].originalPosition.longitude;
+						var weatherJSONid;
+						var weatherJSONmain;
+						var urlWeather = "https://api.openweathermap.org/data/2.5/weather?lat=" + latGPS +"&lon=" + lonGPS + "&appid=60ffb92f8328c08440fcb05e58563fb4";
 						
 
-						
-					
-					
-						
+						var requestWeather = $.get(urlWeather, function(data, status){
+							weatherJSONid = data.weather[0].id;
+							weatherJSONmain = data.weather[0].main;
+							console.log(weatherJSONid);
+						});
 						var currentDate = new Date();
 						
 						
 						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
 						var dataJsonLight = {
-
 								heure: currentDate.getHours(),
 								min:currentDate.getMinutes(),
+								meteo: {
+									id:weatherJSONid,
+									main:weatherJSONmain
+								},
 								routes: parseRoute.response.route.map(function(route)
 								{
-								
 									return {
 
 										id:route.id,
-										//min
-										//meteo: route.meteo,
 										waypoints: route.shape.filter(function(shape,index) {
 											return index % 10 == 0;
 										})
@@ -257,8 +265,7 @@ module.exports = haversine
 						//	var date = currentDate.getDate();
 						
 
-						console.log('affichage heure');
-						console.log(dataJsonLight['heure']);
+						
 
 						/*var dataJsonWithId.route.map(route => {
 						return {
@@ -305,6 +312,9 @@ module.exports = haversine
 						}.bind(this);
 						//Envoi du Json au backEnd
 						
+						console.log('JSON Light');
+						console.log(dataJsonLight);
+
 						xhr.send(JSON.stringify(dataJsonLight));
 						//console.log("Envoi xhr fait");
 
