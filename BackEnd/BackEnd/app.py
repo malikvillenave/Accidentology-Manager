@@ -51,7 +51,7 @@ def create_indicator_request(first_waypoint, second_waypoint):
 
 
 def processWaypointQueue(waypoint, waypoints, q, index):
-    waypoint_interval = 100 #place temporairement ici
+    waypoint_interval = 10 #place temporairement ici
     rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
     danger_level = 0
     sem.acquire()
@@ -191,10 +191,118 @@ class ServiceIndicatorLight(Resource):
         return {"put": "example"}
 
 
+def create_indicator_hour_lt1_request(first_waypoint, second_waypoint, hrmn):
+    first_waypoint_coord = [round(float(x), 7) for x in first_waypoint.split(",")]
+    second_waypoint_coord = [round(float(x), 7) for x in second_waypoint.split(",")]
+    center_waypoint = [round((second_waypoint_coord[0] + first_waypoint_coord[0]) / 2, 7),
+                       round((second_waypoint_coord[1] + first_waypoint_coord[1]) / 2, 7)]
+    rayon = round(math.sqrt((center_waypoint[0] - first_waypoint_coord[0]) ** 2) + (
+                (center_waypoint[1] - first_waypoint_coord[1]) ** 2), 7)
+    rqt = ('SELECT indicateur '
+           'FROM '
+           'usager_accidente_par_vehicule as usg '
+           'WHERE '
+           + str(rayon) + ' > |/((usg.longitude-(' + str(center_waypoint[1]) + '))^2+(+usg.latitude-(' + str(
+                center_waypoint[0]) + '))^2) AND'
+                                      ' id_heure IN ('
+                                      ' SELECT id_heure'
+                                      ' FROM public."Heure"'
+                                      ' WHERE abs((heure*100+minute) - ('+str(hrmn)+')) < 100 OR abs((heure*100+minute) - ('+str(hrmn)+')) > 2300)')
+    return rqt
+
+
+def create_indicator_hour_gte1_request(first_waypoint, second_waypoint, hrmn):
+    first_waypoint_coord = [round(float(x), 7) for x in first_waypoint.split(",")]
+    second_waypoint_coord = [round(float(x), 7) for x in second_waypoint.split(",")]
+    center_waypoint = [round((second_waypoint_coord[0] + first_waypoint_coord[0]) / 2, 7),
+                       round((second_waypoint_coord[1] + first_waypoint_coord[1]) / 2, 7)]
+    rayon = round(math.sqrt((center_waypoint[0] - first_waypoint_coord[0]) ** 2) + (
+                (center_waypoint[1] - first_waypoint_coord[1]) ** 2), 7)
+    rqt = ('SELECT indicateur '
+           'FROM '
+           'usager_accidente_par_vehicule as usg '
+           'WHERE '
+           + str(rayon) + ' > |/((usg.longitude-(' + str(center_waypoint[1]) + '))^2+(+usg.latitude-(' + str(
+                center_waypoint[0]) + '))^2) AND'
+                                      ' id_heure IN ('
+                                      ' SELECT id_heure'
+                                      ' FROM public."Heure"'
+                                      ' WHERE abs((heure*100+minute) - ('+str(hrmn)+')) >= 100 OR abs((heure*100+minute) - ('+str(hrmn)+')) <= 2300)')
+    return rqt
+
+
+class ServiceIndicatorHour(Resource):
+    def get(self):
+        return {"get": "example"}
+
+    def post(self):
+        try:
+
+            json = request.json
+            hr = json['heure']
+            mn = json['min']
+            hrmn = hr * 100 + mn
+            waypoint_interval = 10
+
+            for route in json['routes']:
+
+                waypoints = route['waypoints']
+                ind_sum = 0
+                weight_sum = 0
+                acc_count = 0
+
+                for index, waypoint in enumerate(waypoints):
+                    if index > len(waypoints) - waypoint_interval:
+                        break
+
+                    if index % waypoint_interval == 0:
+                        #Différence < 1 heure : poids = 1
+                        w = 1 #poids à utiliser dans cette condition (<1h)
+                        rqt = create_indicator_hour_lt1_request(waypoint, waypoints[index + waypoint_interval], hrmn)
+                        cursor.execute(rqt)
+                        for record in cursor:
+                            if record[0]:
+                                ind_sum = ind_sum + (record[0]*w)
+                                weight_sum = weight_sum + w
+                                acc_count = acc_count + 1
+                        # Différence >= 1 heure : poids = 0.5
+                        w = 0.5 #poids à utiliser dans cette condition (>=1h)
+                        rqt = create_indicator_hour_gte1_request(waypoint, waypoints[index + waypoint_interval], hrmn)
+                        cursor.execute(rqt)
+                        for record in cursor:
+                            if record[0]:
+                                ind_sum = ind_sum + (record[0]*w)
+                                weight_sum = weight_sum + w
+                                acc_count = acc_count + 1
+                if acc_count == 0:
+                    route['dangerLevel'] = 1
+                else:
+                    moy_ind = (ind_sum*1.0) / (weight_sum*1.0)
+                    route['dangerLevel'] = (1/(1+(2/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
+
+            if json is None:
+                return {"post": []}, 405
+
+
+
+            return {"response": json}
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
+
+    def delete(self):
+        return {"delete": "example"}
+
+    def put(self):
+        return {"put": "example"}
+
+
 api.add_resource(ServiceIndicator, '/Indicator')
 
 api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
 
+api.add_resource(ServiceIndicatorHour, '/IndicatorHour')
+
 if __name__ == '__main__':
     WSGIRequestHandler.protocol_version = "HTTP/1.1"
-    app.run()
+app.run()
