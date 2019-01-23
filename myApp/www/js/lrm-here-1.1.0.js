@@ -233,10 +233,8 @@ module.exports = haversine
 						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
 						var dataJsonLight = {
 
-							response:{
-								
 								heure: currentDate.getHours(),
-								minute:currentDate.getMinutes(),
+								min:currentDate.getMinutes(),
 								routes: parseRoute.response.route.map(function(route)
 								{
 								
@@ -251,16 +249,16 @@ module.exports = haversine
 									}
 							
 								})
-							}	
-						}
+								
+						};
 						
 
 						// recuperation de la date heure min de l'user
 						//	var date = currentDate.getDate();
 						
 
-						console.log('datajson');
-						console.log(dataJsonLight);
+						console.log('affichage heure');
+						console.log(dataJsonLight['heure']);
 
 						/*var dataJsonWithId.route.map(route => {
 						return {
@@ -278,7 +276,7 @@ module.exports = haversine
 						
 						var xhr = new XMLHttpRequest();
 
-						var url = "http://10.0.2.2:5000/IndicatorLight";
+						var url = "http://10.0.2.2:5000/IndicatorHour";
 						
 						xhr.open("POST", url, true);
 						
@@ -292,11 +290,11 @@ module.exports = haversine
 						        var responseBackend = JSON.parse(xhr.response);
 
 						        //traitement reponse backend
-						        //console.log('id : '+responseBackend.response[0].id)
+						       // console.log('id : '+responseBackend.response.routes[0].id);
 								parseRoute.response.route.map(function(route,index) {
-									if(route['id'] == responseBackend.response[index].id ){
+									if(route['id'] == responseBackend.response.routes[index].id ){
 
-										route['dangerLevel'] = responseBackend.response[index].dangerLevel;
+										route['dangerLevel'] = responseBackend.response.routes[index].dangerLevel;
 									}
 								});
 								console.log("Affichage resultat traitement");
@@ -306,7 +304,7 @@ module.exports = haversine
 						    }
 						}.bind(this);
 						//Envoi du Json au backEnd
-						//console.log(JSON.stringify(dataJsonLight));
+						
 						xhr.send(JSON.stringify(dataJsonLight));
 						//console.log("Envoi xhr fait");
 
