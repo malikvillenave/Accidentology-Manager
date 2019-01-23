@@ -23,20 +23,6 @@ app.config['DEBUG'] = True
 api = Api(app)
 sem = Semaphore()
 
-# rqt a modifier/utiliser plustard
-# rqt = "SELECT indicateur " \
-#         "FROM " \
-#         "usager_accidente_par_vehicule as usg AND" \
-#         "usg  LEFT OUTER JOIN ON type_vehicule ( usg.id_type_vehicule. = type_vehicule.id_typeVehicule) AND" \
-#         "usg LEFT OUTER JOIN ON type_route ( usg.id_type_route. = type_route.id_typeRoute) AND" \
-#         "usg LEFT OUTER JOIN ON meteo ( usg.id_meteo. = meteo.id_meteo)" \
-#         "WHERE" \
-#         "type_route.type_route = " + request.args.get('type_route')+ \
-#         "AND usg.longitude < " + (waypoint['lon'] - interval)+ \
-#         "AND usg.longitude > " + (waypoint['lon'] + interval)+ \
-#         "AND usg.latitude < " + (waypoint['lat'] - interval)+ \
-#         "AND usg.latitude > " + (waypoint['lat'] + interval)
-
 
 def create_indicator_request(first_waypoint, second_waypoint):
     first_waypoint_coord = [round(float(x), 7) for x in first_waypoint.split(",")]
@@ -187,14 +173,14 @@ class ServiceIndicatorLight(Resource):
         return {"put": "example"}
 
 
-def create_indicator_param_request(first_waypoint, second_waypoint, hrmn, hoursplit):
+def create_indicator_param_request(first_waypoint, second_waypoint, hrmn, param):
     first_waypoint_coord = [round(float(x), 7) for x in first_waypoint.split(",")]
     second_waypoint_coord = [round(float(x), 7) for x in second_waypoint.split(",")]
     center_waypoint = [round((second_waypoint_coord[0] + first_waypoint_coord[0]) / 2, 7),
                        round((second_waypoint_coord[1] + first_waypoint_coord[1]) / 2, 7)]
     rayon = round(math.sqrt((center_waypoint[0] - first_waypoint_coord[0]) ** 2) + (
                 (center_waypoint[1] - first_waypoint_coord[1]) ** 2), 7)
-    if hoursplit == "lt1":
+    if param == "lt1":
         rqt = ('SELECT indicateur '
                'FROM '
                'usager_accidente_par_vehicule as usg '
@@ -206,7 +192,7 @@ def create_indicator_param_request(first_waypoint, second_waypoint, hrmn, hoursp
                                           ' FROM public."Heure"'
                                           ' WHERE abs((heure*100+minute) - (' + str(
                     hrmn) + ')) < 100 OR abs((heure*100+minute) - (' + str(hrmn) + ')) > 2300)')
-    elif hoursplit == "gte1":
+    elif param == "gte1":
         rqt = ('SELECT indicateur '
                'FROM '
                'usager_accidente_par_vehicule as usg '
@@ -226,14 +212,14 @@ def create_indicator_param_request(first_waypoint, second_waypoint, hrmn, hoursp
                     center_waypoint[0]) + '))^2)')
     return rqt
 
-def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn, hoursplit):
+def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn, param):
     first_waypoint_coord = [round(float(x), 7) for x in first_waypoint.split(",")]
     second_waypoint_coord = [round(float(x), 7) for x in second_waypoint.split(",")]
     center_waypoint = [round((second_waypoint_coord[0] + first_waypoint_coord[0]) / 2, 7),
                        round((second_waypoint_coord[1] + first_waypoint_coord[1]) / 2, 7)]
     rayon = round(math.sqrt((center_waypoint[0] - first_waypoint_coord[0]) ** 2) + (
                 (center_waypoint[1] - first_waypoint_coord[1]) ** 2), 7)
-    if hoursplit == "lt1":
+    if param == "lt1":
         rqt = ('SELECT sum(indicateur), count(*) '
                'FROM '
                'usager_accidente_par_vehicule as usg '
@@ -245,7 +231,7 @@ def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn,
                                           ' FROM public."Heure"'
                                           ' WHERE abs((heure*100+minute) - (' + str(
                     hrmn) + ')) < 100 OR abs((heure*100+minute) - (' + str(hrmn) + ')) > 2300)')
-    elif hoursplit == "gte1":
+    elif param == "gte1":
         rqt = ('SELECT sum(indicateur), count(*) '
                'FROM '
                'usager_accidente_par_vehicule as usg '
@@ -378,6 +364,86 @@ class ServiceIndicatorHourGrouped(Resource):
         return {"put": "example"}
 
 
+def processWaypointHourGroupedQueue(waypoint, waypoints, q, index, hrmn, param, w):
+    waypoint_interval = 10 #place temporairement ici
+    rqt = create_indicator_paramGrouped_request(waypoint, waypoints[index + waypoint_interval], hrmn, param)
+    ind_sum = 0
+    weight_sum = 0
+    acc_count = 0
+    sem.acquire()
+    cursor.execute(rqt)
+    for record in cursor:
+        if record[0]:
+            ind_sum = record[0] * w
+            weight_sum = record[1] * w
+            acc_count = record[1]
+    sem.release()
+    q.put((ind_sum, weight_sum, acc_count))
+
+
+class ServiceIndicatorHourGroupedPara(Resource):
+    def get(self):
+        return {"get": "example"}
+
+    def post(self):
+        try:
+            res_queue = queue.Queue()
+
+            json = request.json
+            hr = json['heure']
+            mn = json['min']
+            hrmn = hr * 100 + mn
+            waypoint_interval = 10
+            start = time.time()
+            for route in json['routes']:
+
+                waypoints = route['waypoints']
+                threads=[]
+                ind_sum = 0
+                weight_sum = 0
+                acc_count = 0
+
+                for index, waypoint in enumerate(waypoints):
+                    if index > len(waypoints) - waypoint_interval:
+                        break
+
+                    if index % waypoint_interval == 0:
+                        for param, w in param_weights.items():
+                            t = Thread(target=processWaypointHourGroupedQueue, args=(waypoint, waypoints, res_queue, index, hrmn, param, w))
+                            t.start()
+                            threads.append(t)
+
+                for t in threads:
+                    t.join()
+
+                while not res_queue.empty():
+                    result = res_queue.get()
+                    ind_sum = ind_sum + result[0]
+                    weight_sum = weight_sum + result[1]
+                    acc_count = acc_count + result[2]
+
+                if acc_count == 0:
+                    route['dangerLevel'] = 1
+                else:
+                    moy_ind = (ind_sum*1.0) / (weight_sum*1.0)
+                    route['dangerLevel'] = (1/(1+(2/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
+            end = time.time()
+            print(end-start)
+            if json is None:
+                return {"post": []}, 405
+
+            return {"response": json}
+        except Exception as e:
+            print(e)
+            return {"response": {}}, 404
+
+    def delete(self):
+        return {"delete": "example"}
+
+    def put(self):
+        return {"put": "example"}
+
+
 api.add_resource(ServiceIndicator, '/Indicator')
 
 api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
@@ -385,6 +451,8 @@ api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
 api.add_resource(ServiceIndicatorHour, '/IndicatorHour')
 
 api.add_resource(ServiceIndicatorHourGrouped, '/IndicatorHourGrouped')
+
+api.add_resource(ServiceIndicatorHourGroupedPara, '/IndicatorHourGroupedPara')
 
 
 if __name__ == '__main__':
