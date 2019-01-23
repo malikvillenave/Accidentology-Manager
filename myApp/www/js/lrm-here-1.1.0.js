@@ -205,8 +205,8 @@ module.exports = haversine
 				if (!timedOut) {
 					if (!err) {
 
-						//console.log("Si pas erreurs");
-						//Récupérer dans le XMLHttpRequest, la partie responseText
+				
+						//Récupérer dans la reponse de Here
 						var dataJson = resp.responseText;
 						
 						//Parser pour récupérer toutes les routes possibles
@@ -218,31 +218,52 @@ module.exports = haversine
 						parseRoute.response.route.map(function(route,index) {
 							route['id'] = index;
 						});
-						console.log('affichage de parseRoute');
-						console.log(parseRoute);
+						//console.log('affichage de parseRoute');
+						//console.log(parseRoute);
 
+					//Récupération des coordonnées GPS du point de départ
+					//Servira pour la requete pour OpenWeather
+						var latGPS = parseRoute.response.route[0].waypoint[0].originalPosition.latitude;
+						var lonGPS = parseRoute.response.route[0].waypoint[0].originalPosition.longitude;
+						var weatherJSONid;
+						var weatherJSONmain;
+						var urlWeather = "https://api.openweathermap.org/data/2.5/weather?lat=" + latGPS +"&lon=" + lonGPS + "&appid=60ffb92f8328c08440fcb05e58563fb4";
 						
+						var xhr = new XMLHttpRequest();
 
+						var url =urlWeather;
 						
-					
+						xhr.open("GET", url, false);
+						xhr.onreadystatechange = function () { 
+						    if (xhr.status == 200) {
+						    	//console.log("reponse meteo");
+						    	var rep = JSON.parse(xhr.response);
+						    	//console.log(rep);
+						    	weatherJSONid =rep.weather[0].id;
+						    	weatherJSONmain =rep.weather[0].main;
+						    }
+						};
+		
+						xhr.send(null);
 					
 						
 						var currentDate = new Date();
-						
 						
 						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
 						var dataJsonLight = {
 
 								heure: currentDate.getHours(),
 								min:currentDate.getMinutes(),
+								meteo: {
+										id:weatherJSONid,
+										main:weatherJSONmain
+										},
 								routes: parseRoute.response.route.map(function(route)
 								{
 								
 									return {
 
 										id:route.id,
-										//min
-										//meteo: route.meteo,
 										waypoints: route.shape.filter(function(shape,index) {
 											return index % 10 == 0;
 										})
@@ -251,27 +272,10 @@ module.exports = haversine
 								})
 								
 						};
-						
+				
 
-						// recuperation de la date heure min de l'user
-						//	var date = currentDate.getDate();
-						
-
-						console.log('affichage heure');
-						console.log(dataJsonLight['heure']);
-
-						/*var dataJsonWithId.route.map(route => {
-						return {
-							id:route.id,
-							meteo: route.meteo,
-							waypoints: route.shapes.filter((shape,index) => index % 10 == 0)
-						}
-						})*/
-						
-						//Afficher le JSON complet (id + waypoints)
-						//console.log("Liste Final");
-						//listefinal={'response':sendJson};
-						//console.log(listefinal);
+						//console.log('affichage du json a envoyer');
+						//console.log(dataJsonLight);
 						
 						
 						var xhr = new XMLHttpRequest();
@@ -297,8 +301,8 @@ module.exports = haversine
 										route['dangerLevel'] = responseBackend.response.routes[index].dangerLevel;
 									}
 								});
-								console.log("Affichage resultat traitement");
-								console.log(parseRoute);
+								//console.log("Affichage resultat traitement");
+								//console.log(parseRoute);
 								
 						       this._routeDone(parseRoute, wps, callback, context);
 						    }
