@@ -1,5 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 function corslite(url, callback, cors) {
+	//console.log("lrm-here-1.1.0 - Corslite");
     var sent = false;
 
     if (typeof window.XMLHttpRequest === 'undefined') {
@@ -39,12 +40,14 @@ function corslite(url, callback, cors) {
     }
 
     function loaded() {
+		
         if (
             // XDomainRequest
             x.status === undefined ||
             // modern browsers
             isSuccessful(x.status))
 			{
+				//console.log("Loaded IF")
 				callback.call(x, null, x);
 			}
         else callback.call(x, x, null);
@@ -139,7 +142,9 @@ module.exports = haversine
 },{}],3:[function(require,module,exports){
 (function (global){
 (function() {
+	
 	'use strict';
+
 	var L = (typeof window !== "undefined" ? window['L'] : typeof global !== "undefined" ? global['L'] : null);
 	var corslite = require('corslite');
 	var haversine = require('haversine');
@@ -151,7 +156,7 @@ module.exports = haversine
 			serviceUrl: 'https://route.cit.api.here.com/routing/7.2/calculateroute.json',
 			timeout: 30 * 1000,
 			alternatives: 0,
-			mode: 'fastest;car',
+			mode: 'fastest;car;traffic:enabled',
 			urlParameters: {}
 		},
 
@@ -172,6 +177,7 @@ module.exports = haversine
 
 			options = options || {};
 			url = this.buildRouteUrl(waypoints, options);
+			console.log(url);
 			timer = setTimeout(30000000,function() {
 								timedOut = true;
 								callback.call(context || callback, {
@@ -193,32 +199,83 @@ module.exports = haversine
 			}
 
 			corslite(url, L.bind(function(err, resp) {
+				var ladata = null;
+
 				//clearTimeout(timer);
 				if (!timedOut) {
 					if (!err) {
+
+						//console.log("Si pas erreurs");
 						//Récupérer dans le XMLHttpRequest, la partie responseText
 						var dataJson = resp.responseText;
 						
 						//Parser pour récupérer toutes les routes possibles
 						var parseRoute = JSON.parse(dataJson);
+						//var dataJsonV2 = parseRoute.response.route;
+						//console.log(dataJsonV2);
 						
 						//Ajout d'un attribut id pour chaque route détectée
 						parseRoute.response.route.map(function(route,index) {
 							route['id'] = index;
 						});
+						console.log('affichage de parseRoute');
+						console.log(parseRoute);
+
+						
+
+						
+					
+					
+						
+						var currentDate = new Date();
+						
 						
 						//Alleger le JSON en ne prenant que les donnees utiles pour l'appli
-						var dataJsonLight = parseRoute.response.route.map(function(route)
-						{
-							return {
-								id:route.id,
-								//meteo: route.meteo,
-								waypoints: route.shape.filter(function(shape,index) {
-									return index % 10 == 0;
+						var dataJsonLight = {
+
+							response:{
+								
+								heure: currentDate.getHours(),
+								minute:currentDate.getMinutes(),
+								routes: parseRoute.response.route.map(function(route)
+								{
+								
+									return {
+
+										id:route.id,
+										//min
+										//meteo: route.meteo,
+										waypoints: route.shape.filter(function(shape,index) {
+											return index % 10 == 0;
+										})
+									}
+							
 								})
-							}
-						});
-												
+							}	
+						}
+						
+
+						// recuperation de la date heure min de l'user
+						//	var date = currentDate.getDate();
+						
+
+						console.log('datajson');
+						console.log(dataJsonLight);
+
+						/*var dataJsonWithId.route.map(route => {
+						return {
+							id:route.id,
+							meteo: route.meteo,
+							waypoints: route.shapes.filter((shape,index) => index % 10 == 0)
+						}
+						})*/
+						
+						//Afficher le JSON complet (id + waypoints)
+						//console.log("Liste Final");
+						//listefinal={'response':sendJson};
+						//console.log(listefinal);
+						
+						
 						var xhr = new XMLHttpRequest();
 
 						var url = "http://10.0.2.2:5000/IndicatorLight";
@@ -235,19 +292,24 @@ module.exports = haversine
 						        var responseBackend = JSON.parse(xhr.response);
 
 						        //traitement reponse backend
+						        //console.log('id : '+responseBackend.response[0].id)
 								parseRoute.response.route.map(function(route,index) {
 									if(route['id'] == responseBackend.response[index].id ){
 
 										route['dangerLevel'] = responseBackend.response[index].dangerLevel;
 									}
 								});
+								console.log("Affichage resultat traitement");
+								console.log(parseRoute);
 								
 						       this._routeDone(parseRoute, wps, callback, context);
 						    }
 						}.bind(this);
-
 						//Envoi du Json au backEnd
+						//console.log(JSON.stringify(dataJsonLight));
 						xhr.send(JSON.stringify(dataJsonLight));
+						//console.log("Envoi xhr fait");
+
 
 					} else {
 						callback.call(context || callback, {
@@ -315,6 +377,8 @@ module.exports = haversine
 						waypoint.mappedPosition.longitude));
 				}
 
+				//console.log("Danger Level");
+				//console.log(response.response.route[i].dangerLevel);
 				alts.push({
 					name: '',
 					coordinates: coordinates,
@@ -333,6 +397,7 @@ module.exports = haversine
 		},
 
 		_decodeGeometry: function(geometry) {
+			//console.log("decodeGeometry");
 			var latlngs = new Array(geometry.length),
 				coord,
 				i;
@@ -345,6 +410,7 @@ module.exports = haversine
 		},
 
 		buildRouteUrl: function(waypoints, options) {
+			//console.log("buildRouteUrl");
 			var locs = [],
 				i,
 				alternatives,
@@ -372,6 +438,7 @@ module.exports = haversine
 		},
 
 		_convertInstruction: function(instruction, coordinates, startingSearchIndex) {
+			//console.log("convertInstruction");
 			var i,
 			distance,
 			closestDistance = 0,
