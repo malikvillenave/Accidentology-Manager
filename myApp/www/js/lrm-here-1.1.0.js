@@ -206,7 +206,7 @@ module.exports = haversine
                     if (!err) {
 
                 
-                        //Récupérer de la reponse de Here
+                        //Récupéreration de la reponse de Here
                         var dataJson = resp.responseText;
                         
                         //Parser pour récupérer toutes les routes possibles
