@@ -136,7 +136,9 @@ class ServiceIndicatorLight(Resource):
             if response is None:
                 return {"post": []}, 404
 
-            return {"response": response}
+            return {"response": {
+                        "routes": response
+                    }}
 
         except Exception as e:
             print(e)

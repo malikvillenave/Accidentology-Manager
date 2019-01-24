@@ -1,6 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 function corslite(url, callback, cors) {
-    //console.log("lrm-here-1.1.0 - Corslite");
     var sent = false;
 
     if (typeof window.XMLHttpRequest === 'undefined') {
@@ -47,7 +46,6 @@ function corslite(url, callback, cors) {
             // modern browsers
             isSuccessful(x.status))
             {
-                //console.log("Loaded IF")
                 callback.call(x, null, x);
             }
         else callback.call(x, x, null);
@@ -177,7 +175,6 @@ module.exports = haversine
 
             options = options || {};
             url = this.buildRouteUrl(waypoints, options);
-            console.log(url);
             timer = setTimeout(30000000,function() {
                                 timedOut = true;
                                 callback.call(context || callback, {
@@ -211,15 +208,11 @@ module.exports = haversine
                         
                         //Parser pour récupérer toutes les routes possibles
                         var parseRoute = JSON.parse(dataJson);
-                        //var dataJsonV2 = parseRoute.response.route;
-                        //console.log(dataJsonV2);
                         
                         //Ajout d'un attribut id pour chaque route détectée
                         parseRoute.response.route.map(function(route,index) {
                             route['id'] = index;
                         });
-                        //console.log('affichage de parseRoute');
-                        //console.log(parseRoute);
 
                     //Récupération des coordonnées GPS du point de départ
                     //Servira pour la requete pour OpenWeather
@@ -236,9 +229,7 @@ module.exports = haversine
                         xhr.open("GET", url, false);
                         xhr.onreadystatechange = function () { 
                             if (xhr.status == 200) {
-                                //console.log("reponse meteo");
                                 var rep = JSON.parse(xhr.response);
-                                //console.log(rep);
                                 //weatherJSONid =rep.weather[0].id;
                                 weatherJSONmain =rep.weather[0].main;
                             }
@@ -291,15 +282,12 @@ module.exports = haversine
                                 var responseBackend = JSON.parse(xhr.response);
 
                                 //traitement reponse backend
-                               // console.log('id : '+responseBackend.response.routes[0].id);
                                 parseRoute.response.route.map(function(route,index) {
                                     if(route['id'] == responseBackend.response.routes[index].id ){
 
                                         route['dangerLevel'] = responseBackend.response.routes[index].dangerLevel;
                                     }
                                 });
-                                //console.log("Affichage resultat traitement");
-                                //console.log(parseRoute);
                                 
                                this._routeDone(parseRoute, wps, callback, context);
                             }
@@ -307,7 +295,6 @@ module.exports = haversine
                         //Envoi du Json au backEnd
                         
                         xhr.send(JSON.stringify(dataJsonLight));
-                        //console.log("Envoi xhr fait");
 
 
                     } else {
@@ -376,8 +363,6 @@ module.exports = haversine
                         waypoint.mappedPosition.longitude));
                 }
 
-                //console.log("Danger Level");
-                //console.log(response.response.route[i].dangerLevel);
                 alts.push({
                     name: '',
                     coordinates: coordinates,
@@ -396,7 +381,6 @@ module.exports = haversine
         },
 
         _decodeGeometry: function(geometry) {
-            //console.log("decodeGeometry");
             var latlngs = new Array(geometry.length),
                 coord,
                 i;
@@ -409,7 +393,6 @@ module.exports = haversine
         },
 
         buildRouteUrl: function(waypoints, options) {
-            //console.log("buildRouteUrl");
             var locs = [],
                 i,
                 alternatives,
@@ -437,7 +420,6 @@ module.exports = haversine
         },
 
         _convertInstruction: function(instruction, coordinates, startingSearchIndex) {
-            //console.log("convertInstruction");
             var i,
             distance,
             closestDistance = 0,
