@@ -112,30 +112,30 @@ class ServiceIndicatorLight(Resource):
 
             if json is None:
                 return {"post": []}, 404
-            print(json)
-            waypoint_interval = 10
+
             response = []
             for route in json['routes']:
-
                 waypoints = route['waypoints']
                 moy_indicator = []
-
-                for index, waypoint in enumerate(waypoints):
-                    if index > len(waypoints) - waypoint_interval:
+                for indexWaypoint, waypoint in enumerate(waypoints):
+                    if indexWaypoint >= (len(waypoints)-1):
                         break
-
-                    if index % waypoint_interval == 0:
-                        rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
-                        cursor.execute(rqt)
-                        for record in cursor:
-                            if record[0]:
-                                moy_indicator.append(record[0])
+                    rqt = create_indicator_request(waypoint, waypoints[indexWaypoint + 1])
+                    cursor.execute(rqt)
+                    for record in cursor:
+                        if record[0]:
+                            moy_indicator.append(record[0])
                 if (not moy_indicator):
                     moy_indicator = [1]
 
+                response.append({
+                    'id': route['id'],
+                    'dangerLevel': mean(moy_indicator)
+                })
+
             if response is None:
                 return {"post": []}, 404
-            print(response)
+
             return {"response": response}
 
         except Exception as e:
