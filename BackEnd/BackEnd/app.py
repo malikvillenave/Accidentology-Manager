@@ -112,10 +112,10 @@ class ServiceIndicatorLight(Resource):
 
             if json is None:
                 return {"post": []}, 404
-
+            print(json)
             waypoint_interval = 10
             response = []
-            for route in json:
+            for route in json['routes']:
 
                 waypoints = route['waypoints']
                 moy_indicator = []
@@ -133,17 +133,12 @@ class ServiceIndicatorLight(Resource):
                 if (not moy_indicator):
                     moy_indicator = [1]
 
-                response.append({
-                    'id': route['id'],
-                    'dangerLevel': mean(moy_indicator)
-                })
-
             if response is None:
                 return {"post": []}, 404
             print(response)
             return {"response": response}
 
-          except Exception as e:
+        except Exception as e:
             print(e)
             return {"response": {}}, 404
 
@@ -157,13 +152,6 @@ class ServiceIndicatorLight(Resource):
 api.add_resource(ServiceIndicator, '/Indicator')
 
 api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
-
-api.add_resource(ServiceIndicatorHour, '/IndicatorHour')
-
-api.add_resource(ServiceIndicatorHourGrouped, '/IndicatorHourGrouped')
-
-api.add_resource(ServiceIndicatorHourGroupedPara, '/IndicatorHourGroupedPara')
-
 
 if __name__ == '__main__':
     WSGIRequestHandler.protocol_version = "HTTP/1.1"

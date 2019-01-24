@@ -253,7 +253,7 @@ module.exports = haversine
                         var dataJsonLight = {
 
                                 heure: currentDate.getHours(),
-                                min:currentDate.getMinutes(),
+                                minute:currentDate.getMinutes(),
                                 weather:weatherJSONmain,
                                 routes: parseRoute.response.route.map(function(route)
                                 {
@@ -277,7 +277,7 @@ module.exports = haversine
                         
                         var xhr = new XMLHttpRequest();
 
-                        var url = "http://10.0.2.2:5000/IndicatorHourGroupedPara";
+                        var url = "http://10.0.2.2:5000/IndicatorLight";
                         
                         xhr.open("POST", url, true);
                         
