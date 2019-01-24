@@ -11,10 +11,38 @@ import time
 
 app = Flask(__name__)
 
-
 try:
     conn = psycopg2.connect(config.CONNECTION_STRING)
     cursor = conn.cursor()
+    cursor.execute(
+        'prepare Prep_lt1 as '
+        'SELECT sum(indicateur), count(*) '
+        'FROM '
+        'usager_accidente_par_vehicule as usg '
+        'WHERE '
+        ' $1 > |/((usg.longitude-($3))^2+(+usg.latitude-('
+        '$2))^2) AND'
+        ' id_heure IN ('
+        ' SELECT id_heure'
+        ' FROM public."Heure"'
+        ' WHERE abs((heure*60+minute) - ('
+        '$4)) < 60 OR abs((heure*60+minute) - ($4)) > 1380)'
+    )
+
+    cursor.execute(
+        'prepare Prep_gte1 as '
+        'SELECT sum(indicateur), count(*) '
+        'FROM '
+        'usager_accidente_par_vehicule as usg '
+        'WHERE '
+        ' $1 > |/((usg.longitude-($3))^2+(+usg.latitude-('
+        '$2))^2) AND'
+        ' id_heure IN ('
+        ' SELECT id_heure'
+        ' FROM public."Heure"'
+        ' WHERE abs((heure*60+minute) - ('
+        '$4)) >= 60 OR abs((heure*60+minute) - ($4)) <= 1380)'
+    )
 except:
     print("Connection failed")
 
@@ -250,37 +278,6 @@ def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn,
                + str(rayon) + ' > |/((usg.longitude-(' + str(center_waypoint[1]) + '))^2+(+usg.latitude-(' + str(
                     center_waypoint[0]) + '))^2)')
     return rqt
-
-
-cursor.execute(
-    'prepare Prep_lt1 as '
-    'SELECT sum(indicateur), count(*) '
-               'FROM '
-               'usager_accidente_par_vehicule as usg '
-               'WHERE '
-               ' $1 > |/((usg.longitude-($3))^2+(+usg.latitude-('
-                    '$2))^2) AND'
-                                          ' id_heure IN ('
-                                          ' SELECT id_heure'
-                                          ' FROM public."Heure"'
-                                          ' WHERE abs((heure*60+minute) - ('
-                    '$4)) < 60 OR abs((heure*60+minute) - ($4)) > 1380)'
-)
-
-cursor.execute(
-    'prepare Prep_gte1 as '
-    'SELECT sum(indicateur), count(*) '
-               'FROM '
-               'usager_accidente_par_vehicule as usg '
-               'WHERE '
-               ' $1 > |/((usg.longitude-($3))^2+(+usg.latitude-('
-                    '$2))^2) AND'
-                                          ' id_heure IN ('
-                                          ' SELECT id_heure'
-                                          ' FROM public."Heure"'
-                                          ' WHERE abs((heure*60+minute) - ('
-                    '$4)) >= 60 OR abs((heure*60+minute) - ($4)) <= 1380)'
-)
 
 prepared_queries = {
     "lt1":"Prep_lt1",
@@ -575,6 +572,8 @@ api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
 api.add_resource(ServiceIndicatorHour, '/IndicatorHour')
 
 api.add_resource(ServiceIndicatorHourGrouped, '/IndicatorHourGrouped')
+
+api.add_resource(ServiceIndicatorHourGroupedPara, '/IndicatorHourGroupedPara')
 
 api.add_resource(ServiceIndicatorFinal, '/IndicatorFinal')
 
