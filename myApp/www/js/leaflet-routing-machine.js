@@ -16362,7 +16362,7 @@ module.exports={
 
 			var langs = L.Util.isArray(this.options.language) ?
 				this.options.language :
-				[this.options.language, 'en'];
+				[this.options.language, 'fr'];
 			this._localization = new Localization(langs);
 		},
 
@@ -16560,7 +16560,7 @@ module.exports={
 			},
 			maxGeocoderTolerance: 200,
 			autocompleteOptions: {},
-			language: 'en',
+			language: 'fr',
 		},
 
 		initialize: function(wp, i, nWps, options) {
@@ -17251,7 +17251,7 @@ module.exports = L.Routing = {
 
 	var Localization = L.Class.extend({
 		initialize: function(langs) {
-			this._langs = L.Util.isArray(langs) ? langs.slice() : [langs, 'en'];
+			this._langs = L.Util.isArray(langs) ? langs.slice() : [langs, 'fr'];
 
 			for (var i = 0, l = this._langs.length; i < l; i++) {
 				var generalizedCode = /([A-Za-z]+)/.exec(this._langs[i])[1]
@@ -18026,7 +18026,7 @@ module.exports = L.Routing = {
 			polylinePrecision: 5,
 			useHints: true,
 			suppressDemoServerWarning: false,
-			language: 'en'
+			language: 'fr'
 		},
 
 		initialize: function(options) {
@@ -18388,7 +18388,7 @@ module.exports = L.Routing = {
 			addWaypoints: true,
 			reverseWaypoints: false,
 			addButtonClassName: '',
-			language: 'en',
+			language: 'fr',
 			createGeocoderElement: function(wp, i, nWps, plan) {
 				return new GeocoderElement(wp, i, nWps, plan);
 			},
