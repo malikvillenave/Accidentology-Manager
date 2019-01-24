@@ -239,7 +239,7 @@ module.exports = haversine
                                 //console.log("reponse meteo");
                                 var rep = JSON.parse(xhr.response);
                                 //console.log(rep);
-                                weatherJSONid =rep.weather[0].id;
+                                //weatherJSONid =rep.weather[0].id;
                                 weatherJSONmain =rep.weather[0].main;
                             }
                         };
@@ -254,10 +254,7 @@ module.exports = haversine
 
                                 heure: currentDate.getHours(),
                                 min:currentDate.getMinutes(),
-                                meteo: {
-                                        id:weatherJSONid,
-                                        main:weatherJSONmain
-                                        },
+                                weather:weatherJSONmain,
                                 routes: parseRoute.response.route.map(function(route)
                                 {
                                 
@@ -275,7 +272,7 @@ module.exports = haversine
                 
 
                         //console.log('affichage du json a envoyer');
-                        //console.log(dataJsonLight);
+                        console.log(dataJsonLight);
                         
                         
                         var xhr = new XMLHttpRequest();
