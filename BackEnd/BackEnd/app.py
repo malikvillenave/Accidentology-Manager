@@ -190,8 +190,8 @@ def create_indicator_param_request(first_waypoint, second_waypoint, hrmn, param)
                                           ' id_heure IN ('
                                           ' SELECT id_heure'
                                           ' FROM public."Heure"'
-                                          ' WHERE abs((heure*100+minute) - (' + str(
-                    hrmn) + ')) < 100 OR abs((heure*100+minute) - (' + str(hrmn) + ')) > 2300)')
+                                          ' WHERE abs((heure*60+minute) - (' + str(
+                    hrmn) + ')) < 60 OR abs((heure*60+minute) - (' + str(hrmn) + ')) > 1380)')
     elif param == "gte1":
         rqt = ('SELECT indicateur '
                'FROM '
@@ -202,7 +202,7 @@ def create_indicator_param_request(first_waypoint, second_waypoint, hrmn, param)
                                           ' id_heure IN ('
                                           ' SELECT id_heure'
                                           ' FROM public."Heure"'
-                                          ' WHERE abs((heure*100+minute) - ('+str(hrmn)+')) >= 100 OR abs((heure*100+minute) - ('+str(hrmn)+')) <= 2300)')
+                                          ' WHERE abs((heure*60+minute) - ('+str(hrmn)+')) >= 60 OR abs((heure*60+minute) - ('+str(hrmn)+')) <= 1380)')
     else:
         rqt = ('SELECT indicateur '
                'FROM '
@@ -265,7 +265,7 @@ class ServiceIndicatorHour(Resource):
             json = request.json
             hr = json['heure']
             mn = json['min']
-            hrmn = hr * 100 + mn
+            hrmn = hr * 60 + mn
             waypoint_interval = 10
             start = time.time()
             for route in json['routes']:
@@ -292,7 +292,7 @@ class ServiceIndicatorHour(Resource):
                     route['dangerLevel'] = 1
                 else:
                     moy_ind = (ind_sum*1.0) / (weight_sum*1.0)
-                    route['dangerLevel'] = (1/(1+(2/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
+                    route['dangerLevel'] = (1/(1+(4/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
             end = time.time()
             print(end-start)
             if json is None:
@@ -319,7 +319,7 @@ class ServiceIndicatorHourGrouped(Resource):
             json = request.json
             hr = json['heure']
             mn = json['min']
-            hrmn = hr * 100 + mn
+            hrmn = hr * 60 + mn
             waypoint_interval = 10
             start = time.time()
             for route in json['routes']:
@@ -346,7 +346,7 @@ class ServiceIndicatorHourGrouped(Resource):
                     route['dangerLevel'] = 1
                 else:
                     moy_ind = (ind_sum*1.0) / (weight_sum*1.0)
-                    route['dangerLevel'] = (1/(1+(2/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
+                    route['dangerLevel'] = (1/(1+(4/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
             end = time.time()
             print(end-start)
             if json is None:
@@ -392,7 +392,7 @@ class ServiceIndicatorHourGroupedPara(Resource):
             json = request.json
             hr = json['heure']
             mn = json['min']
-            hrmn = hr * 100 + mn
+            hrmn = hr * 60 + mn
             waypoint_interval = 10
             start = time.time()
             for route in json['routes']:
@@ -426,7 +426,7 @@ class ServiceIndicatorHourGroupedPara(Resource):
                     route['dangerLevel'] = 1
                 else:
                     moy_ind = (ind_sum*1.0) / (weight_sum*1.0)
-                    route['dangerLevel'] = (1/(1+(2/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
+                    route['dangerLevel'] = (1/(1+(4/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
             end = time.time()
             print(end-start)
             if json is None:
