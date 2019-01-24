@@ -7,9 +7,9 @@ import config
 from threading import Thread, Semaphore
 from werkzeug.serving import WSGIRequestHandler
 import queue
+import time
 
 app = Flask(__name__)
-
 
 try:
     conn = psycopg2.connect(config.CONNECTION_STRING)
@@ -21,20 +21,6 @@ app.config['DEBUG'] = True
 
 api = Api(app)
 sem = Semaphore()
-
-# rqt a modifier/utiliser plustard
-# rqt = "SELECT indicateur " \
-#         "FROM " \
-#         "usager_accidente_par_vehicule as usg AND" \
-#         "usg  LEFT OUTER JOIN ON type_vehicule ( usg.id_type_vehicule. = type_vehicule.id_typeVehicule) AND" \
-#         "usg LEFT OUTER JOIN ON type_route ( usg.id_type_route. = type_route.id_typeRoute) AND" \
-#         "usg LEFT OUTER JOIN ON meteo ( usg.id_meteo. = meteo.id_meteo)" \
-#         "WHERE" \
-#         "type_route.type_route = " + request.args.get('type_route')+ \
-#         "AND usg.longitude < " + (waypoint['lon'] - interval)+ \
-#         "AND usg.longitude > " + (waypoint['lon'] + interval)+ \
-#         "AND usg.latitude < " + (waypoint['lat'] - interval)+ \
-#         "AND usg.latitude > " + (waypoint['lat'] + interval)
 
 
 def create_indicator_request(first_waypoint, second_waypoint):
@@ -51,7 +37,7 @@ def create_indicator_request(first_waypoint, second_waypoint):
 
 
 def processWaypointQueue(waypoint, waypoints, q, index):
-    waypoint_interval = 100 #place temporairement ici
+    waypoint_interval = 10 #place temporairement ici
     rqt = create_indicator_request(waypoint, waypoints[index + waypoint_interval])
     danger_level = 0
     sem.acquire()
@@ -112,7 +98,6 @@ class ServiceIndicator(Resource):
         return {"put": "not implemented"}
 
 
-
 class ServiceIndicatorLight(Resource):
     def get(self):
         try:
@@ -157,7 +142,8 @@ class ServiceIndicatorLight(Resource):
                 return {"post": []}, 404
             print(response)
             return {"response": response}
-        except Exception as e:
+
+          except Exception as e:
             print(e)
             return {"response": {}}, 404
 
@@ -171,6 +157,13 @@ class ServiceIndicatorLight(Resource):
 api.add_resource(ServiceIndicator, '/Indicator')
 
 api.add_resource(ServiceIndicatorLight, '/IndicatorLight')
+
+api.add_resource(ServiceIndicatorHour, '/IndicatorHour')
+
+api.add_resource(ServiceIndicatorHourGrouped, '/IndicatorHourGrouped')
+
+api.add_resource(ServiceIndicatorHourGroupedPara, '/IndicatorHourGroupedPara')
+
 
 if __name__ == '__main__':
     WSGIRequestHandler.protocol_version = "HTTP/1.1"
