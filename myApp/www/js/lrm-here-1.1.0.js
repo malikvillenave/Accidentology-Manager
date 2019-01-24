@@ -277,7 +277,7 @@ module.exports = haversine
                         
                         var xhr = new XMLHttpRequest();
 
-                        var url = "http://10.0.2.2:5000/IndicatorHour";
+                        var url = "http://10.0.2.2:5000/IndicatorHourGroupedPara";
                         
                         xhr.open("POST", url, true);
                         
