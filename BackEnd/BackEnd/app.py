@@ -40,7 +40,7 @@ def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn,
                                           ' SELECT id_heure'
                                           ' FROM public."Heure"'
                                           ' WHERE abs((heure*60+minute) - (' + str(
-                    hrmn) + ')) < 60 OR abs((heure*60+minute) - (' + str(hrmn) + ')) > 1380)')
+                    hrmn) + ')) < 90 OR abs((heure*60+minute) - (' + str(hrmn) + ')) > 1350)')
     elif param == "gte1":
         rqt = ('SELECT sum(indicateur), count(*) '
                'FROM '
@@ -51,7 +51,7 @@ def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn,
                                           ' id_heure IN ('
                                           ' SELECT id_heure'
                                           ' FROM public."Heure"'
-                                          ' WHERE abs((heure*60+minute) - ('+str(hrmn)+')) >= 60 OR abs((heure*60+minute) - ('+str(hrmn)+')) <= 1380)')
+                                          ' WHERE abs((heure*60+minute) - ('+str(hrmn)+')) >= 90 OR abs((heure*60+minute) - ('+str(hrmn)+')) <= 1350)')
     else:
         rqt = ('SELECT sum(indicateur), count(*) '
                'FROM '
