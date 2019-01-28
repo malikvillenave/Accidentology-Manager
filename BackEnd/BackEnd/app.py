@@ -74,14 +74,16 @@ def processWaypointHourGroupedQueue(waypoint, waypoints, q, index, hrmn, param, 
     ind_sum = 0
     weight_sum = 0
     acc_count = 0
-    sem.acquire()
+
+    conn = psycopg2.connect(config.CONNECTION_STRING)
+    cursor = conn.cursor()
     cursor.execute(rqt)
     for record in cursor:
         if record[0]:
             ind_sum = record[0] * w
             weight_sum = record[1] * w
             acc_count = record[1]
-    sem.release()
+
     q.put((ind_sum, weight_sum, acc_count))
 
 #erviceIndicatorHourGroupedPara
