@@ -10,12 +10,6 @@ import time
 
 app = Flask(__name__)
 
-try:
-    conn = psycopg2.connect(config.CONNECTION_STRING)
-    cursor = conn.cursor()
-except:
-    print("Connection failed")
-
 app.config['DEBUG'] = True
 
 api = Api(app)
@@ -68,15 +62,18 @@ param_weights = {
 }
 
 
-def processWaypointHourGroupedQueue(waypoint, waypoints, q, index, hrmn, param, w):
-    waypoint_interval = 10 #place temporairement ici
+def processWaypointHourGroupedQueue(waypoint, waypoints, waypoint_interval, q, index, hrmn, param, w):
     rqt = create_indicator_paramGrouped_request(waypoint, waypoints[index + waypoint_interval], hrmn, param)
     ind_sum = 0
     weight_sum = 0
     acc_count = 0
 
-    conn = psycopg2.connect(config.CONNECTION_STRING)
-    cursor = conn.cursor()
+    try:
+        conn = psycopg2.connect(config.CONNECTION_STRING)
+        cursor = conn.cursor()
+    except:
+        print("Connection to database failed")
+
     cursor.execute(rqt)
     for record in cursor:
         if record[0]:
@@ -93,29 +90,34 @@ class ServiceIndicator(Resource):
 
     def post(self):
         try:
+            json = request.json
+
+            if json is None:
+                return {"post": "JSon file not found"}, 404
+
             res_queue = queue.Queue()
 
-            json = request.json
             hr = json['heure']
-            mn = json['min']
+            mn = json['minute']
             hrmn = hr * 60 + mn
             waypoint_interval = 10
             start = time.time()
             for route in json['routes']:
 
                 waypoints = route['waypoints']
-                threads=[]
+                response = []
+                threads = []
                 ind_sum = 0
                 weight_sum = 0
                 acc_count = 0
 
-                for index, waypoint in enumerate(waypoints):
-                    if index > len(waypoints) - waypoint_interval:
+                for indexWaypoint, waypoint in enumerate(waypoints):
+                    if indexWaypoint >= len(waypoints) - waypoint_interval:
                         break
 
-                    if index % waypoint_interval == 0:
+                    if indexWaypoint % waypoint_interval == 0:
                         for param, w in param_weights.items():
-                            t = Thread(target=processWaypointHourGroupedQueue, args=(waypoint, waypoints, res_queue, index, hrmn, param, w))
+                            t = Thread(target=processWaypointHourGroupedQueue, args=(waypoint, waypoints, waypoint_interval, res_queue, indexWaypoint, hrmn, param, w))
                             t.start()
                             threads.append(t)
 
@@ -129,19 +131,27 @@ class ServiceIndicator(Resource):
                     acc_count = acc_count + result[2]
 
                 if acc_count == 0:
-                    route['dangerLevel'] = 1
+                    response.append({
+                        'id': route['id'],
+                        'dangerLevel': 1
+                    })
                 else:
                     moy_ind = (ind_sum*1.0) / (weight_sum*1.0)
-                    route['dangerLevel'] = (1/(1+(4/acc_count)))*moy_ind #utilisation de la formule (1/(1+(2/n)))*IND   avec    n le nombre d'accidents
+                    # Formule (1/(1+(2/n)))*IND
+                    # n = nombre d'accidents
+                    response.append({
+                        'id': route['id'],
+                        'dangerLevel': (1/(1+(4/acc_count)))*moy_ind
+                    })
             end = time.time()
             print(end-start)
             if json is None:
-                return {"post": []}, 405
+                return {"post": "The response JSon could not be created"}, 404
 
-            return {"response": json}
+            return {"response": response}
         except Exception as e:
             print(e)
-            return {"response": {}}, 404
+            return {"response": "An error occurred"}, 404
 
     def delete(self):
         return {"delete": "example"}
@@ -151,7 +161,6 @@ class ServiceIndicator(Resource):
 
 
 api.add_resource(ServiceIndicator, '/Indicator')
-
 
 if __name__ == '__main__':
     WSGIRequestHandler.protocol_version = "HTTP/1.1"
