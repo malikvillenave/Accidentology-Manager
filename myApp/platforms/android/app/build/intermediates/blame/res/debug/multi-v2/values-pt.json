@@ -1,6 +1,21 @@
 {
     "logs": [
         {
+            "outputFile": "D:\\Users\\loic\\Documents\\FAC\\Accidentology-Manager\\myApp\\platforms\\android\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-pt\\values-pt.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\LoicP\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.1.0.aar\\e914a5eb885c2a2f86339619097831e0\\res\\values-pt\\values-pt.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    }
+                }
+            ]
+        },
+        {
             "outputFile": "D:\\ProjetArchi\\Accidentology-Manager\\myApp\\platforms\\android\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-pt\\values-pt.xml",
             "map": [
                 {

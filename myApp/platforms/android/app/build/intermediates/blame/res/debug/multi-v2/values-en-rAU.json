@@ -16,6 +16,21 @@
             ]
         },
         {
+            "outputFile": "D:\\Users\\loic\\Documents\\FAC\\Accidentology-Manager\\myApp\\platforms\\android\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-en-rAU\\values-en-rAU.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\LoicP\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.1.0.aar\\e914a5eb885c2a2f86339619097831e0\\res\\values-en-rAU\\values-en-rAU.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    }
+                }
+            ]
+        },
+        {
             "outputFile": "C:\\Users\\Matthieu\\Desktop\\Test_Cordova_Returns\\myApp\\platforms\\android\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-en-rAU\\values-en-rAU.xml",
             "map": [
                 {

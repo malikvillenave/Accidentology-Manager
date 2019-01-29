@@ -33,10 +33,11 @@ var app = {
                 {color: 'white', opacity: 0.8, weight: 6},
                 {color: 'red', opacity: 1, weight: 2}],
     // Application Constructor
+    geolocalisation: null,
     initialize: function() {
 
        //document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
-        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onError,{timeout:1000,enableHighAccuracy: false});
+        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onError,{timeout:10000,enableHighAccuracy: false});
         document.getElementById("searchButton").onclick = function(){
             if(app.hidden){
                 app.removeDisplayInstructions(false);
@@ -89,7 +90,9 @@ var app = {
     onSuccess: function(position){
         app.userLocation = [position.coords.latitude,position.coords.longitude];
         console.log("Location retreived successfully");
+        console.log(position.coords.latitude,position.coords.longitude);
         app.startMap();
+        app.geolocalisation=position;
     },
 
     onError: function(error){
@@ -119,6 +122,7 @@ var app = {
 
         console.log('Received Event: ' + id);
     },*/
+
 
 
     startMap: function(){
@@ -220,7 +224,33 @@ var app = {
         };
         b.innerHTML = 'Rechercher';
 
+        var geo = document.createElement('button');
+        geo.setAttribute('content', 'test content');
+        geo.setAttribute('class', 'btn');
+        geo.setAttribute("style","left:10px;position: relative; bottom: 30px;");
+
+        geo.onclick = function (event) {
+            console.log(app.geolocalisation)
+            var platform = new H.service.Platform({
+              'app_id': 'pUWGl9JYtaF6v2LC4haP',
+              'app_code': 'zgnrd-DWcuahqCQSWK2_bg'
+            });
+            var geocoder = platform.getGeocodingService(); 
+            var reverseGeocodingParameters = {
+                prox: '46.1469082, -1.1557959',
+                mode: 'retrieveAddresses',
+                maxresults: 1
+              };
+
+            geocoder.reverseGeocode(
+                reverseGeocodingParameters,
+                onSuccess,
+            function(e) { alert(e); });
+        };
+            geo.innerHTML = 'géolocalisation';
+
         document.getElementsByClassName("leaflet-routing-container leaflet-bar leaflet-routing-collapsible leaflet-control")[0].appendChild(b);
+        document.getElementsByClassName("leaflet-routing-container leaflet-bar leaflet-routing-collapsible leaflet-control")[0].appendChild(geo);
         this.control.hide();
 
 
