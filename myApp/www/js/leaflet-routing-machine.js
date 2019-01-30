@@ -16352,7 +16352,7 @@ module.exports={
 		options: {
 			units: 'metric',
 			unitNames: null,
-			language: 'en',
+			language: 'fr',
 			roundingSensitivity: 1,
 			distanceTemplate: '{value} {unit}'
 		},
@@ -16362,7 +16362,7 @@ module.exports={
 
 			var langs = L.Util.isArray(this.options.language) ?
 				this.options.language :
-				[this.options.language, 'fr'];
+				[this.options.language, 'en'];
 			this._localization = new Localization(langs);
 		},
 
