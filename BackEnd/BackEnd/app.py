@@ -13,17 +13,16 @@ app = Flask(__name__)
 app.config['DEBUG'] = True
 
 api = Api(app)
-sem = Semaphore()
 
 
-def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn, param):
+def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn, id_weather, param):
     first_waypoint_coord = [round(float(x), 7) for x in first_waypoint.split(",")]
     second_waypoint_coord = [round(float(x), 7) for x in second_waypoint.split(",")]
     center_waypoint = [round((second_waypoint_coord[0] + first_waypoint_coord[0]) / 2, 7),
                        round((second_waypoint_coord[1] + first_waypoint_coord[1]) / 2, 7)]
     rayon = round(math.sqrt((center_waypoint[0] - first_waypoint_coord[0]) ** 2) + (
                 (center_waypoint[1] - first_waypoint_coord[1]) ** 2), 7)
-    if param == "lt1":
+    if param == "lt_time/eq_weather":
         rqt = ('SELECT sum(indicateur), count(*) '
                'FROM '
                'usager_accidente_par_vehicule as usg '
@@ -34,8 +33,9 @@ def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn,
                                           ' SELECT id_heure'
                                           ' FROM public."Heure"'
                                           ' WHERE abs((heure*60+minute) - (' + str(
-                    hrmn) + ')) < 90 OR abs((heure*60+minute) - (' + str(hrmn) + ')) > 1350)')
-    elif param == "gte1":
+                    hrmn) + ')) < 90 OR abs((heure*60+minute) - (' + str(hrmn) + ')) > 1350)'
+                                          ' AND id_meteo = '+ str(id_weather) + "")
+    elif param == "gte_time/eq_weather":
         rqt = ('SELECT sum(indicateur), count(*) '
                'FROM '
                'usager_accidente_par_vehicule as usg '
@@ -45,7 +45,37 @@ def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn,
                                           ' id_heure IN ('
                                           ' SELECT id_heure'
                                           ' FROM public."Heure"'
-                                          ' WHERE abs((heure*60+minute) - ('+str(hrmn)+')) >= 90 OR abs((heure*60+minute) - ('+str(hrmn)+')) <= 1350)')
+                                          ' WHERE abs((heure*60+minute) - ('+str(
+                    hrmn)+')) >= 90 OR abs((heure*60+minute) - ('+str(hrmn)+')) <= 1350)'
+                                          ' AND id_meteo = ' + str(id_weather) + "")
+    elif param == "lt_time/neq_weather":
+        rqt = ('SELECT sum(indicateur), count(*) '
+               'FROM '
+               'usager_accidente_par_vehicule as usg '
+               'WHERE '
+               + str(rayon) + ' > |/((usg.longitude-(' + str(center_waypoint[1]) + '))^2+(+usg.latitude-(' + str(
+                    center_waypoint[0]) + '))^2) AND'
+                                          ' id_heure IN ('
+                                          ' SELECT id_heure'
+                                          ' FROM public."Heure"'
+                                          ' WHERE abs((heure*60+minute) - (' + str(
+                    hrmn) + ')) < 90 OR abs((heure*60+minute) - (' + str(hrmn) + ')) > 1350)'
+                                                                                 ' AND id_meteo <> ' + str(
+                    id_weather) + "")
+    elif param == "gte_time/neq_weather":
+        rqt = ('SELECT sum(indicateur), count(*) '
+               'FROM '
+               'usager_accidente_par_vehicule as usg '
+               'WHERE '
+               + str(rayon) + ' > |/((usg.longitude-(' + str(center_waypoint[1]) + '))^2+(+usg.latitude-(' + str(
+                    center_waypoint[0]) + '))^2) AND'
+                                          ' id_heure IN ('
+                                          ' SELECT id_heure'
+                                          ' FROM public."Heure"'
+                                          ' WHERE abs((heure*60+minute) - (' + str(
+                    hrmn) + ')) >= 90 OR abs((heure*60+minute) - (' + str(hrmn) + ')) <= 1350)'
+                                                                                  ' AND id_meteo <> ' + str(
+                    id_weather) + "")
     else:
         rqt = ('SELECT sum(indicateur), count(*) '
                'FROM '
@@ -56,14 +86,25 @@ def create_indicator_paramGrouped_request(first_waypoint, second_waypoint, hrmn,
     return rqt
 
 
+weather_match_dict = {}
+weather_match_dict.update(dict.fromkeys(['800'], 1))
+weather_match_dict.update(dict.fromkeys(['200','230','231','232','300','301','302','310','311','312','313','314','321','500','520'], 2))
+weather_match_dict.update(dict.fromkeys(['201','202','501','502','503','504','521','522','531'], 3))
+weather_match_dict.update(dict.fromkeys(['511','600','601','602','611','612','615','616','620','621','622'], 4))
+weather_match_dict.update(dict.fromkeys(['701','711','721','741','761','762'], 5))
+weather_match_dict.update(dict.fromkeys(['731','751','771','781'], 6))
+weather_match_dict.update(dict.fromkeys(['801','802','803','804','210','211','212','221'], 8))
+
 param_weights = {
-    "lt1":1,
-    "gte1":0.5
+    "lt_time/eq_weather":1,
+    "gte_time/eq_weather":0.5,
+    "lt_time/neq_weather":0.5,
+    "gte_time/neq_weather":0.25
 }
 
 
-def processWaypointHourGroupedQueue(waypoint, waypoints, waypoint_interval, q, index, hrmn, param, w):
-    rqt = create_indicator_paramGrouped_request(waypoint, waypoints[index + waypoint_interval], hrmn, param)
+def processWaypointHourGroupedQueue(waypoint, waypoints, waypoint_interval, q, index, hrmn, id_weather, param, w):
+    rqt = create_indicator_paramGrouped_request(waypoint, waypoints[index + waypoint_interval], hrmn, id_weather, param)
     ind_sum = 0
     weight_sum = 0
     acc_count = 0
@@ -83,7 +124,7 @@ def processWaypointHourGroupedQueue(waypoint, waypoints, waypoint_interval, q, i
 
     q.put((ind_sum, weight_sum, acc_count))
 
-#erviceIndicatorHourGroupedPara
+
 class ServiceIndicator(Resource):
     def get(self):
         return {"get": "example"}
@@ -95,17 +136,21 @@ class ServiceIndicator(Resource):
             if json is None:
                 return {"post": "JSon file not found"}, 404
 
+            response = []
+
             res_queue = queue.Queue()
 
             hr = json['heure']
             mn = json['minute']
+            code_weather = json['weather']
+            id_weather = weather_match_dict[code_weather]
             hrmn = hr * 60 + mn
             waypoint_interval = 10
             start = time.time()
             for route in json['routes']:
 
                 waypoints = route['waypoints']
-                response = []
+
                 threads = []
                 ind_sum = 0
                 weight_sum = 0
@@ -117,7 +162,7 @@ class ServiceIndicator(Resource):
 
                     if indexWaypoint % waypoint_interval == 0:
                         for param, w in param_weights.items():
-                            t = Thread(target=processWaypointHourGroupedQueue, args=(waypoint, waypoints, waypoint_interval, res_queue, indexWaypoint, hrmn, param, w))
+                            t = Thread(target=processWaypointHourGroupedQueue, args=(waypoint, waypoints, waypoint_interval, res_queue, indexWaypoint, hrmn, id_weather, param, w))
                             t.start()
                             threads.append(t)
 
