@@ -102,10 +102,11 @@ class ServiceIndicator(Resource):
             hrmn = hr * 60 + mn
             waypoint_interval = 10
             start = time.time()
+            response = []
+            
             for route in json['routes']:
 
                 waypoints = route['waypoints']
-                response = []
                 threads = []
                 ind_sum = 0
                 weight_sum = 0
