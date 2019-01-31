@@ -36,7 +36,7 @@ var app = {
     initialize: function() {
 
        //document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
-        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onError,{timeout:15000,enableHighAccuracy: false});
+        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onError,{timeout:3000,enableHighAccuracy: false});
         document.getElementById("searchButton").onclick = function(){
             if(app.hidden){
                 app.removeDisplayInstructions(false);
