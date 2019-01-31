@@ -280,12 +280,13 @@ module.exports = haversine
                                 document.getElementsByClassName("routesToDisplay")[0].setAttribute('style', 'display:block;');
                                 
                                 var responseBackend = JSON.parse(xhr.response);
+                                console.log(responseBackend);
 
                                 //traitement reponse backend
                                 parseRoute.response.route.map(function(route,index) {
-                                    if(route['id'] == responseBackend.response.routes[index].id ){
+                                    if(route['id'] == responseBackend.response[index].id ){
 
-                                        route['dangerLevel'] = responseBackend.response.routes[index].dangerLevel;
+                                        route['dangerLevel'] = responseBackend.response[index].dangerLevel;
                                     }
                                 });
                                 
