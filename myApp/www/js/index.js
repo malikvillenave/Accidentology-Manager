@@ -41,7 +41,7 @@ var app = {
             if(app.hidden){
                 app.removeDisplayInstructions(false);
                 app.control.show();
-                document.getElementsByClassName("leaflet-routing-container leaflet-bar leaflet-routing-collapsible leaflet-control")[0].setAttribute('style', 'width : 360px; height : 515px;');
+                document.getElementsByClassName("leaflet-routing-container leaflet-bar leaflet-routing-collapsible leaflet-control")[0].setAttribute('style', 'width : 100%; height : 400px;');
                 app.hidden = false;
             }
             else{

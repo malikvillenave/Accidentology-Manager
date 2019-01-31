@@ -16352,7 +16352,7 @@ module.exports={
 		options: {
 			units: 'metric',
 			unitNames: null,
-			language: 'en',
+			language: 'fr',
 			roundingSensitivity: 1,
 			distanceTemplate: '{value} {unit}'
 		},
@@ -16362,7 +16362,7 @@ module.exports={
 
 			var langs = L.Util.isArray(this.options.language) ?
 				this.options.language :
-				[this.options.language, 'fr'];
+				[this.options.language, 'en'];
 			this._localization = new Localization(langs);
 		},
 
@@ -16804,7 +16804,8 @@ module.exports = L.Routing = {
 				opacity: 1,
 				fillOpacity: 0.7
 			},
-			summaryTemplate: "<h2>{name}</h2><h3 style='color:{color}'>Danger : {fixedNumber}&nbsp;&nbsp;-&nbsp;&nbsp;{distance}, {time} &nbsp; <img src='images/car_icon.png' height='16' width='16'> &nbsp; <button onclick='app.displayInstrutions(this)'>&#10132;</button></h3>",
+			summaryTemplate: "<h2>{name}</h2><h3 style='color:{color}'><img src='images/car_icon.png' height='16' width='16'>&nbsp; Indice de risque : {fixedNumber}<br/>" +
+                            "{distance}, {time} &nbsp; &nbsp; <button onclick='app.displayInstrutions(this)'>&#10132;</button></h3>",
 			timeTemplate: '{time}',
 			containerClassName: '',
 			alternativeClassName: '',

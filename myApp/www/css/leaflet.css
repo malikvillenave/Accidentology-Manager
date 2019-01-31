@@ -132,6 +132,7 @@
 	}
 .leaflet-right {
 	right: 0;
+	width:100%;
 	}
 .leaflet-bottom {
 	bottom: 0;
@@ -156,7 +157,10 @@
 	margin-left: 10px;
 	}
 .leaflet-right .leaflet-control {
-	margin-right: 10px;
+	margin-right: 0px;
+	}
+.routesToDisplay {
+	width:100%;
 	}
 
 
