@@ -36,12 +36,12 @@ var app = {
     initialize: function() {
 
        //document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
-        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onError,{timeout:1000,enableHighAccuracy: false});
+        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onError,{timeout:3000,enableHighAccuracy: false});
         document.getElementById("searchButton").onclick = function(){
             if(app.hidden){
                 app.removeDisplayInstructions(false);
                 app.control.show();
-                document.getElementsByClassName("leaflet-routing-container leaflet-bar leaflet-routing-collapsible leaflet-control")[0].setAttribute('style', 'width : 360px; height : 515px;');
+                document.getElementsByClassName("leaflet-routing-container leaflet-bar leaflet-routing-collapsible leaflet-control")[0].setAttribute('style', 'width : 100%; height : 400px;');
                 app.hidden = false;
             }
             else{
@@ -113,10 +113,8 @@ var app = {
         var parentElement = document.getElementById(id);
         var listeningElement = parentElement.querySelector('.listening');
         var receivedElement = parentElement.querySelector('.received');
-
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:block;');
-
         console.log('Received Event: ' + id);
     },*/
 
@@ -124,15 +122,15 @@ var app = {
     startMap: function(){
         this.mymap = L.map('mapid').setView(this.userLocation, 10);
 
-        L.tileLayer.here({appId: 'MfEihsDsmlJT96yodOUl', appCode: 'd6ZS0xmcVvTCiC6SkWzqew'}).addTo(this.mymap);
+        L.tileLayer.here({appId: 'pUWGl9JYtaF6v2LC4haP', appCode: 'zgnrd-DWcuahqCQSWK2_bg'}).addTo(this.mymap);
 
         this.control = L.Routing.control({
             waypoints: [],
             altLineOptions: {styles : this.good_style},
             showAlternatives : true,
-            router : new L.Routing.Here("MfEihsDsmlJT96yodOUl","d6ZS0xmcVvTCiC6SkWzqew", {alternatives : 2}),
+            router : new L.Routing.Here("pUWGl9JYtaF6v2LC4haP","zgnrd-DWcuahqCQSWK2_bg", {alternatives : 2}),
             routeWhileDragging: false,
-            geocoder: L.Control.Geocoder.here({app_id :"MfEihsDsmlJT96yodOUl" ,app_code :"d6ZS0xmcVvTCiC6SkWzqew"}),
+            geocoder: L.Control.Geocoder.here({app_id :"pUWGl9JYtaF6v2LC4haP" ,app_code :"zgnrd-DWcuahqCQSWK2_bg"}),
         });
 
         this.control.on('routeselected', function(e) {
@@ -175,8 +173,6 @@ var app = {
             app.mymap.dragging.enable();
         });
             /*var html = this.control.getContainer().getElementsByClassName("leaflet-routing-geocoders");
-
-
             if(html !== "undefined" && html !== null){
                 if(html[0] !== "undefined" && html[0] !== null){
                     var routesMenu = document.getElementById("searchForm");

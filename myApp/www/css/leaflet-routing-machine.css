@@ -249,7 +249,8 @@
     position: relative;
     left: 4px;
     top: 4px;
-    display: block;
+    /*display: block;*/
+    display: none;
     width: 26px;
     height: 23px;
     background-image: url('routing-icon.png');
@@ -264,6 +265,7 @@
 }
 .leaflet-right .leaflet-routing-container.leaflet-routing-container-hide {
     margin-right: 10px !important;
+    display: none;
 }
 .leaflet-bottom .leaflet-routing-container.leaflet-routing-container-hide {
     margin-bottom: 10px !important;
